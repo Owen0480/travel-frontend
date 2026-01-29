@@ -19,6 +19,7 @@ const Navbar = () => {
     };
 
     if (!isAuthenticated) return null;
+    if (location.pathname === '/chat') return null;
 
     return (
         <nav className="glass-container" style={{
