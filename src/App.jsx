@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Login from './Login'
-import Register from './Register'
-import AuthCallback from './AuthCallback'
-import Home from './Home'
-import Chat from './Chat'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import AuthCallback from './pages/AuthCallback'
+import Home from './pages/Home'
+import Chat from './pages/Chat'
+import MyPage from './pages/MyPage'
+import ImageSearch from './pages/ImageSearch'
+import Navbar from './components/layout/Navbar'
 import api from './api/axios'
 
 function App() {
@@ -59,23 +62,23 @@ function App() {
     }
 
     return (
-        <Routes>
-            <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
+        <>
+            <Navbar />
+            <main>
+                <Routes>
+                    <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
 
-            <Route
-                path="/"
-                element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />}
-            />
-            <Route
-                path="/chat"
-                element={isAuthenticated ? <Chat /> : <Navigate to="/login" replace />}
-            />
+                    <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />} />
+                    <Route path="/chat" element={isAuthenticated ? <Chat /> : <Navigate to="/login" replace />} />
+                    <Route path="/mypage" element={isAuthenticated ? <MyPage /> : <Navigate to="/login" replace />} />
+                    <Route path="/image-search" element={isAuthenticated ? <ImageSearch /> : <Navigate to="/login" replace />} />
 
-            {/* 잘못된 경로나 중복 정의 방지: 모든 정의되지 않은 경로는 홈으로 */}
-            <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+            </main>
+        </>
     )
 }
 
