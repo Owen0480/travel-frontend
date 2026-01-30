@@ -19,7 +19,7 @@ const AuthCallback = () => {
 
                 // Trigger auth state change for App component
                 window.dispatchEvent(new Event('auth-change'));
-                navigate('/', { replace: true });
+                navigate('/chat', { replace: true });
             } else {
                 console.error('Authentication failed: No token found');
                 navigate('/login', { replace: true });

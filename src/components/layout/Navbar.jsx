@@ -34,7 +34,7 @@ const Navbar = () => {
             top: '20px',
             zIndex: 1000
         }}>
-            <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Link to="/chat" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{ padding: '8px', background: 'var(--primary)', borderRadius: '10px' }}>
                     <span style={{ fontSize: '1.2rem' }}>✈️</span>
                 </div>
@@ -44,9 +44,6 @@ const Navbar = () => {
             </Link>
 
             <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
-                <Link to="/" className={location.pathname === '/' ? 'gradient-text' : ''} style={{ textDecoration: 'none', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.95rem' }}>
-                    Home
-                </Link>
                 <Link to="/chat" className={location.pathname === '/chat' ? 'gradient-text' : ''} style={{ textDecoration: 'none', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.95rem' }}>
                     Travel AI Chat
                 </Link>
