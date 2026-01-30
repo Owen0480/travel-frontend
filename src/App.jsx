@@ -20,11 +20,10 @@ function App() {
 
         const checkAuth = async () => {
             const hasAccessToken = !!localStorage.getItem('accessToken');
-            const isLoginPage = window.location.pathname === '/login';
 
-            if (!hasAccessToken && !isLoginPage) {
+            if (!hasAccessToken) {
                 try {
-                    // Access Token이 없으면 항상 Refresh Token(쿠키)으로 재발급 시도
+                    // Access Token이 없으면 Refresh Token(쿠키)으로 재발급 시도
                     const response = await api.post('/auth/refresh');
                     localStorage.setItem('accessToken', response.data.accessToken);
                     if (response.data.email) localStorage.setItem('email', response.data.email);
