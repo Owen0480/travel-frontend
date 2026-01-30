@@ -10,16 +10,29 @@ const AuthCallback = () => {
         const checkAuth = async () => {
             const params = new URLSearchParams(location.search);
             const accessToken = params.get('accessToken');
-            const refreshToken = params.get('refreshToken');
-            const email = params.get('email');
 
             if (accessToken) {
+                // Store access token first
                 localStorage.setItem('accessToken', accessToken);
-                if (email) localStorage.setItem('email', email);
 
-                // Trigger auth state change for App component
-                window.dispatchEvent(new Event('auth-change'));
-                navigate('/chat', { replace: true });
+                try {
+                    // Fetch user info from backend
+                    const response = await api.get('/v1/users/info');
+                    const userData = response.data.data;
+
+                    // Store user information
+                    if (userData.email) localStorage.setItem('email', userData.email);
+                    if (userData.fullName) localStorage.setItem('fullname', userData.fullName);
+
+                    // Trigger auth state change for App component
+                    window.dispatchEvent(new Event('auth-change'));
+                    navigate('/chat', { replace: true });
+                } catch (error) {
+                    console.error('Failed to fetch user info:', error);
+                    // Even if user info fetch fails, proceed to chat
+                    window.dispatchEvent(new Event('auth-change'));
+                    navigate('/chat', { replace: true });
+                }
             } else {
                 console.error('Authentication failed: No token found');
                 navigate('/login', { replace: true });

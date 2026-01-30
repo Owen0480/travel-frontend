@@ -13,6 +13,7 @@ const MyPage = () => {
         } finally {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('email');
+            localStorage.removeItem('fullname');
             window.location.href = '/login';
         }
     };
@@ -28,6 +29,7 @@ const MyPage = () => {
             } finally {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('email');
+                localStorage.removeItem('fullname');
                 window.location.href = '/login';
             }
         }
@@ -131,9 +133,10 @@ const MyPage = () => {
 
         const nameEl = document.getElementById('user-name');
         const emailEl = document.getElementById('user-email');
-        const email = localStorage.getItem('email') || 'User';
+        const fullname = localStorage.getItem('fullname') || 'User';
+        const email = localStorage.getItem('email') || '';
 
-        if (nameEl) nameEl.textContent = email.split('@')[0];
+        if (nameEl) nameEl.textContent = fullname;
         if (emailEl) emailEl.textContent = email;
 
         const logoutBtn = document.getElementById('logout-button');
