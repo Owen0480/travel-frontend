@@ -19,7 +19,7 @@ const Navbar = () => {
     };
 
     if (!isAuthenticated) return null;
-    if (location.pathname === '/chat' || location.pathname === '/mypage') return null;
+    if (location.pathname === '/chat' || location.pathname === '/mypage' || location.pathname === '/image-search') return null;
 
     return (
         <nav className="glass-container" style={{
