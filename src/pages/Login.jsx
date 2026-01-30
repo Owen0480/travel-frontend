@@ -1,74 +1,132 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Login = () => {
+    const [template, setTemplate] = useState('');
+    const [isLoadingTemplate, setIsLoadingTemplate] = useState(true);
+
     const handleGoogleLogin = () => {
         const backendUrl = `http://${window.location.hostname}:8080`;
         window.location.href = `${backendUrl}/oauth2/authorization/google`;
     };
 
-    return (
-        <div style={{
-            display: 'flex',
-            minHeight: '100vh',
-            width: '100%',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
-            position: 'relative',
-            overflow: 'hidden'
-        }}>
-            {/* Background Decorations */}
-            <div style={{ position: 'absolute', top: '10%', right: '10%', width: '400px', height: '400px', background: 'var(--primary-glow)', filter: 'blur(120px)', zIndex: -1 }}></div>
-            <div style={{ position: 'absolute', bottom: '10%', left: '10%', width: '300px', height: '300px', background: 'var(--accent-glow)', filter: 'blur(100px)', zIndex: -1 }}></div>
+    useEffect(() => {
+        let isMounted = true;
+        const resources = [];
 
-            <div className="glass-container animate-fade-in" style={{
-                maxWidth: '480px',
-                width: '100%',
-                padding: '60px 40px',
-                textAlign: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-            }}>
-                <div style={{
-                    display: 'inline-flex',
-                    padding: '16px',
-                    background: 'var(--primary)',
-                    borderRadius: '20px',
-                    marginBottom: '30px',
-                    boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)'
-                }}>
-                    <span style={{ fontSize: '2rem' }}>✈️</span>
-                </div>
+        const loadPage = async () => {
+            try {
+                // 1. Fetch HTML template with cache buster
+                const timestamp = new Date().getTime();
+                const res = await fetch(`/login_template.html?t=${timestamp}`);
+                const html = await res.text();
 
-                <h1 style={{ fontSize: '2.5rem', marginBottom: '10px', letterSpacing: '-1px' }}>
-                    TRAVEL<span className="gradient-text">AI</span>
-                </h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginBottom: '40px' }}>
-                    당신의 완벽한 여행을 위한 <br /> 인공지능 플래너
-                </p>
+                // If we get an SPA fallback, something is wrong
+                if (html.includes('id="root"')) {
+                    throw new Error('Login template collision detected');
+                }
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    <button onClick={handleGoogleLogin} className="btn-secondary" style={{
-                        width: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '12px',
-                        padding: '16px',
-                        background: 'white',
-                        color: '#1f2937',
-                        border: 'none',
-                        fontSize: '1rem'
-                    }}>
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20" height="20" />
-                        Google 계정으로 계속하기
-                    </button>
+                // 2. Prepare resources
+                const scriptRes = { type: 'script', src: 'https://cdn.tailwindcss.com?plugins=forms,container-queries', id: 'tailwind-cdn-login' };
+                const fontRes1 = { type: 'link', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans:wght@400;500;700&display=swap', rel: 'stylesheet' };
+                const fontRes2 = { type: 'link', href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap', rel: 'stylesheet' };
 
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '20px' }}>
-                        로그인 시 서비스 이용약관 및 <br /> 개인정보 처리방침에 동의하게 됩니다.
-                    </p>
-                </div>
+                const inject = (def) => {
+                    return new Promise((resolve) => {
+                        const el = document.createElement(def.type);
+                        Object.keys(def).forEach(key => { if (key !== 'type') el[key] = def[key]; });
+                        if (def.type === 'script') {
+                            el.onload = () => resolve(el);
+                            el.onerror = () => resolve(el);
+                        } else {
+                            resolve(el);
+                        }
+                        document.head.appendChild(el);
+                        resources.push(el);
+                    });
+                };
+
+                await Promise.all([inject(scriptRes), inject(fontRes1), inject(fontRes2)]);
+
+                // 3. Inject Tailwind Config
+                const configScript = document.createElement('script');
+                configScript.id = 'tailwind-config-login';
+                configScript.innerHTML = `
+                    tailwind.config = {
+                        darkMode: "class",
+                        theme: {
+                            extend: {
+                                colors: {
+                                    "primary": "#1392ec",
+                                    "background-light": "#f6f7f8",
+                                    "background-dark": "#101a22",
+                                },
+                                fontFamily: { "display": ["Plus Jakarta Sans", "sans-serif"] },
+                                borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                            },
+                        },
+                    }
+                `;
+                document.head.appendChild(configScript);
+                resources.push(configScript);
+
+                // 4. Styles Reset (same as MyPage)
+                const styleReset = document.createElement('style');
+                styleReset.id = 'login-style-reset';
+                styleReset.innerHTML = `
+                    body { background-color: #f6f7f8 !important; background-image: none !important; margin: 0; }
+                    .dark body { background-color: #101a22 !important; }
+                `;
+                document.head.appendChild(styleReset);
+                resources.push(styleReset);
+
+                if (isMounted) {
+                    setTemplate(html);
+                    setTimeout(() => { if (isMounted) setIsLoadingTemplate(false); }, 50);
+                }
+            } catch (err) {
+                console.error('Failed to load login page', err);
+                if (isMounted) setIsLoadingTemplate(false);
+            }
+        };
+
+        loadPage();
+
+        return () => {
+            isMounted = false;
+            resources.forEach(el => {
+                if (document.head.contains(el)) document.head.removeChild(el);
+            });
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isLoadingTemplate || !template) return;
+
+        const googleBtn = document.getElementById('google-login-button');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', handleGoogleLogin);
+        }
+
+        return () => {
+            if (googleBtn) {
+                googleBtn.removeEventListener('click', handleGoogleLogin);
+            }
+        };
+    }, [isLoadingTemplate, template]);
+
+    if (isLoadingTemplate) {
+        return (
+            <div style={{ display: 'flex', height: '100vh', width: '100vw', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f6f7f8', position: 'fixed', top: 0, left: 0, zIndex: 1000 }}>
+                <div style={{ width: '40px', height: '40px', border: '4px solid #e7eef3', borderTop: '4px solid #1392ec', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
             </div>
-        </div>
+        );
+    }
+
+    return (
+        <div
+            dangerouslySetInnerHTML={{ __html: template }}
+        />
     );
 };
 
