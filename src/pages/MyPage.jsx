@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 
 const MyPage = () => {
-    const userEmail = localStorage.getItem('email') || 'User';
+    const [template, setTemplate] = useState('');
+
+    const handleLogout = async () => {
+        try {
+            await api.post('/auth/logout');
+        } catch (err) {
+            console.error('Logout failed', err);
+        } finally {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('email');
+            window.location.href = '/login';
+        }
+    };
 
     const withdrawAccount = async () => {
         if (window.confirm('정말로 탈퇴하시겠습니까? 모든 정보가 삭제되며 복구할 수 없습니다.')) {
@@ -20,68 +32,106 @@ const MyPage = () => {
         }
     };
 
+    useEffect(() => {
+        // 1. Fetch HTML template
+        fetch('/Mypage.html')
+            .then(res => res.text())
+            .then(html => setTemplate(html))
+            .catch(err => console.error('Failed to load MyPage template', err));
+
+        // 2. Dynamically inject resources needed for the template to keep index.html clean
+        const resources = [
+            { type: 'script', src: 'https://cdn.tailwindcss.com?plugins=forms,container-queries', id: 'tailwind-cdn' },
+            { type: 'link', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap', rel: 'stylesheet' },
+            { type: 'link', href: 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap', rel: 'stylesheet' }
+        ];
+
+        const elements = resources.map(res => {
+            const el = document.createElement(res.type);
+            Object.keys(res).forEach(key => {
+                if (key !== 'type') el[key] = res[key];
+            });
+            document.head.appendChild(el);
+            return el;
+        });
+
+        // 3. Inject Tailwind Config
+        const configScript = document.createElement('script');
+        configScript.id = 'tailwind-config-mypage';
+        configScript.innerHTML = `
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#1392ec",
+                            "background-light": "#f6f7f8",
+                            "background-dark": "#101a22",
+                        },
+                        fontFamily: {
+                            "display": ["Plus Jakarta Sans"]
+                        }
+                    },
+                },
+            }
+        `;
+        document.head.appendChild(configScript);
+
+        // 4. Reset global styles that interfere with the template
+        const styleReset = document.createElement('style');
+        styleReset.id = 'mypage-style-reset';
+        styleReset.innerHTML = `
+            body {
+                background-color: #f6f7f8 !important;
+                background-image: none !important;
+                color: #0d161b !important;
+                font-family: 'Plus Jakarta Sans', sans-serif !important;
+            }
+            .dark body {
+                background-color: #101a22 !important;
+                color: #e2e8f0 !important;
+            }
+        `;
+        document.head.appendChild(styleReset);
+
+        // Cleanup on unmount
+        return () => {
+            elements.forEach(el => {
+                if (document.head.contains(el)) document.head.removeChild(el);
+            });
+            if (document.head.contains(configScript)) document.head.removeChild(configScript);
+            if (document.head.contains(styleReset)) document.head.removeChild(styleReset);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!template) return;
+
+        // Set user info
+        const nameEl = document.getElementById('user-name');
+        const emailEl = document.getElementById('user-email');
+        const email = localStorage.getItem('email') || 'User';
+
+        if (nameEl) nameEl.textContent = email.split('@')[0];
+        if (emailEl) emailEl.textContent = email;
+
+        // Attach event listeners
+        const logoutBtn = document.getElementById('logout-button');
+        const withdrawBtn = document.getElementById('withdraw-button');
+
+        if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+        if (withdrawBtn) withdrawBtn.addEventListener('click', withdrawAccount);
+
+        return () => {
+            if (logoutBtn) logoutBtn.removeEventListener('click', handleLogout);
+            if (withdrawBtn) withdrawBtn.removeEventListener('click', withdrawAccount);
+        };
+    }, [template]);
+
     return (
-        <div className="container animate-fade-in" style={{ padding: '60px 0' }}>
-            <div className="glass-container" style={{ maxWidth: '800px', margin: '0 auto', padding: '60px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                    <div style={{
-                        width: '120px',
-                        height: '120px',
-                        background: 'linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%)',
-                        borderRadius: '50%',
-                        margin: '0 auto 25px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '3rem',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-                        border: '4px solid var(--glass-border)'
-                    }}>👤</div>
-                    <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>My Account</h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>{userEmail}</p>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div className="glass-card" style={{ padding: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                            <h3 style={{ marginBottom: '5px' }}>Account Status</h3>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Member since 2026</p>
-                        </div>
-                        <span style={{ padding: '6px 12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>ACTIVE</span>
-                    </div>
-
-                    <div className="glass-card" style={{ padding: '30px' }}>
-                        <h3 style={{ marginBottom: '15px' }}>Quick Actions</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <button className="btn-secondary" style={{ padding: '15px' }}>View Saved Places</button>
-                            <button className="btn-secondary" style={{ padding: '15px' }}>Chat History</button>
-                        </div>
-                    </div>
-
-                    <div style={{ marginTop: '40px', padding: '30px', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '24px', background: 'rgba(239, 68, 68, 0.03)' }}>
-                        <h3 style={{ color: '#f87171', marginBottom: '10px' }}>Danger Zone</h3>
-                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
-                            계정을 삭제하면 모든 채팅 데이터와 개인 정보가 영구적으로 제거됩니다.
-                        </p>
-                        <button
-                            onClick={withdrawAccount}
-                            style={{
-                                background: 'transparent',
-                                border: '1px solid #f87171',
-                                color: '#f87171',
-                                padding: '12px 24px',
-                                borderRadius: '12px',
-                                cursor: 'pointer',
-                                fontWeight: '700',
-                                width: 'auto'
-                            }}
-                        >
-                            Delete Account
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div
+            dangerouslySetInnerHTML={{ __html: template }}
+        />
     );
 };
 
