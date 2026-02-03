@@ -6,6 +6,7 @@ import AuthCallback from './pages/AuthCallback'
 import Chat from './pages/Chat'
 import MyPage from './pages/MyPage'
 import ImageSearch from './pages/ImageSearch'
+import TravelStyle from './pages/TravelStyle'
 import Navbar from './components/layout/Navbar'
 import api from './api/axios'
 
@@ -73,6 +74,7 @@ function App() {
                     <Route path="/chat" element={isAuthenticated ? <Chat /> : <Navigate to="/login" replace />} />
                     <Route path="/mypage" element={isAuthenticated ? <MyPage /> : <Navigate to="/login" replace />} />
                     <Route path="/image-search" element={isAuthenticated ? <ImageSearch /> : <Navigate to="/login" replace />} />
+                    <Route path="/travel-style" element={<TravelStyle />} />
 
                     <Route path="*" element={<Navigate to="/chat" />} />
                 </Routes>
