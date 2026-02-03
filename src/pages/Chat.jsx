@@ -7,7 +7,7 @@ import React from 'react';
 const Chat = () => {
     return (
         <iframe
-            src="/Conversation.html"
+            src={`/Conversation.html?ts=${Date.now()}`}
             title="AI Travel Recommendation Chat"
             style={{
                 width: '100%',

@@ -103,8 +103,7 @@
                             <span class="material-symbols-outlined text-[20px]">person</span>
                             <p class="text-sm font-medium">My Page</p>
                         </div>
-                        <div
-                            class="flex items-center gap-3 px-3 py-2 text-[#4c799a] hover:text-[#0d161b] cursor-pointer"
+                        <div class="flex items-center gap-3 px-3 py-2 text-[#4c799a] hover:text-[#0d161b] cursor-pointer"
                             onclick="window.parent.location.href='/travel_style.html'">
                             <span class="material-symbols-outlined text-[20px]">help_outline</span>
                             <p class="text-sm font-medium">Help Center</p>
@@ -120,7 +119,8 @@
                 class="flex items-center justify-between px-8 py-4 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
                 <div class="flex items-center gap-4">
                     <div class="flex flex-col">
-                        <h2 id="chatHeaderTitle" class="text-[#0d161b] dark:text-white text-base font-bold">Travel AI Chat</h2>
+                        <h2 id="chatHeaderTitle" class="text-[#0d161b] dark:text-white text-base font-bold">Travel AI
+                            Chat</h2>
                         <div class="flex items-center gap-2">
                             <span class="flex h-2 w-2 rounded-full bg-green-500"></span>
                             <span class="text-[11px] text-[#4c799a] font-medium uppercase tracking-tighter">AI Concierge
@@ -132,7 +132,9 @@
                     <button class="p-2 text-[#4c799a] hover:bg-slate-100 rounded-full transition-colors">
                         <span class="material-symbols-outlined">share</span>
                     </button>
-                    <button type="button" id="saveConversationBtn" class="p-2 text-[#4c799a] hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors" title="대화 저장">
+                    <button type="button" id="saveConversationBtn"
+                        class="p-2 text-[#4c799a] hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
+                        title="대화 저장">
                         <span class="material-symbols-outlined">star</span>
                     </button>
                     <div class="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
@@ -350,6 +352,58 @@
                 var recentDiscoveriesList = document.getElementById('recentDiscoveriesList');
                 var conversationMessages = [];
 
+                // --- Token Refresh Helper ---
+                async function fetchWithAuth(url, options) {
+                    if (!options) options = {};
+                    if (!options.headers) options.headers = {};
+
+                    var token = localStorage.getItem('accessToken');
+                    if (token) {
+                        // Ensure Authorization header is set/overwritten
+                        options.headers['Authorization'] = 'Bearer ' + token;
+                    }
+                    options.credentials = 'include';
+
+                    try {
+                        var res = await fetch(url, options);
+
+                        // If 401 Unauthorized, try to refresh
+                        if (res.status === 401) {
+                            console.log('🔒 Token expired (401). Attempting refresh...');
+                            try {
+                                // Refresh request (Cookie included, No Auth header needed)
+                                var refreshRes = await fetch('http://localhost:8080/api/auth/refresh', {
+                                    method: 'POST',
+                                    credentials: 'include'
+                                });
+
+                                if (refreshRes.ok) {
+                                    var data = await refreshRes.json();
+                                    var newToken = data.accessToken;
+                                    if (newToken) {
+                                        console.log('✅ Token refresh successful. Retrying original request...');
+                                        localStorage.setItem('accessToken', newToken);
+                                        // Retry original request with new token
+                                        options.headers['Authorization'] = 'Bearer ' + newToken;
+                                        return fetch(url, options);
+                                    }
+                                }
+                                throw new Error('Refresh failed');
+                            } catch (refreshErr) {
+                                console.error('❌ Refresh failed. Redirecting to login.', refreshErr);
+                                localStorage.removeItem('accessToken');
+                                localStorage.removeItem('email');
+                                window.parent.location.href = '/login';
+                                throw refreshErr;
+                            }
+                        }
+                        return res;
+                    } catch (err) {
+                        throw err;
+                    }
+                }
+                // -----------------------------
+
                 function formatDate(isoStr) {
                     if (!isoStr) return '';
                     var d = new Date(isoStr);
@@ -363,15 +417,8 @@
 
                 async function loadRecentDiscoveries() {
                     if (!recentDiscoveriesList) return;
-                    var headers = {};
-                    var token = localStorage.getItem('accessToken');
-                    if (token) headers['Authorization'] = 'Bearer ' + token;
                     try {
-                        var res = await fetch(API_BASE + '/v1/conversations', {
-                            method: 'GET',
-                            headers: headers,
-                            credentials: 'include'
-                        });
+                        var res = await fetchWithAuth(API_BASE + '/v1/conversations', { method: 'GET' });
                         var data = await res.json().catch(function () { return {}; });
                         var list = (data && data.data) ? data.data : [];
                         recentDiscoveriesList.innerHTML = '';
@@ -391,7 +438,8 @@
                             recentDiscoveriesList.appendChild(div);
                         });
                     } catch (err) {
-                        recentDiscoveriesList.innerHTML = '<p class="px-4 py-2 text-[11px] text-red-500">목록을 불러올 수 없습니다.</p>';
+                        // ignore or handle error
+                        console.error(err);
                     }
                 }
 
@@ -472,15 +520,8 @@
                 }
 
                 async function loadConversation(id) {
-                    var headers = {};
-                    var token = localStorage.getItem('accessToken');
-                    if (token) headers['Authorization'] = 'Bearer ' + token;
                     try {
-                        var res = await fetch(API_BASE + '/v1/conversations/' + id, {
-                            method: 'GET',
-                            headers: headers,
-                            credentials: 'include'
-                        });
+                        var res = await fetchWithAuth(API_BASE + '/v1/conversations/' + id, { method: 'GET' });
                         var data = await res.json().catch(function () { return {}; });
                         if (!res.ok || !data.success) {
                             alert(data.message || '대화를 불러올 수 없습니다.');
@@ -515,16 +556,11 @@
                     appendUserMessage(text);
                     appendThinking();
 
-                    var headers = { 'Content-Type': 'application/json' };
-                    var token = localStorage.getItem('accessToken');
-                    if (token) headers['Authorization'] = 'Bearer ' + token;
-
                     try {
-                        var res = await fetch(API_BASE + '/v1/travel/test', {
+                        var res = await fetchWithAuth(API_BASE + '/v1/travel/test', {
                             method: 'POST',
-                            headers: headers,
-                            body: JSON.stringify({ message: text }),
-                            credentials: 'include'
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message: text })
                         });
                         var data = await res.json().catch(function () { return {}; });
                         removeThinking();
@@ -532,7 +568,11 @@
                         appendAiMessage(reply);
                     } catch (err) {
                         removeThinking();
-                        appendAiMessage('오류: ' + (err.message || '네트워크 오류'));
+                        // 401 refresh failed 에러일 경우 이미 redirect 되므로 메시지 표시 안 해도 됨, 
+                        // 하지만 사용자 경험을 위해 표시
+                        if (err.message !== 'Refresh failed') {
+                            appendAiMessage('오류: ' + (err.message || '네트워크 오류'));
+                        }
                     }
                     sendBtn.disabled = false;
                 });
@@ -543,22 +583,16 @@
                             alert('저장할 대화가 없습니다. 먼저 메시지를 보내주세요.');
                             return;
                         }
-                        var headers = { 'Content-Type': 'application/json' };
-                        var token = localStorage.getItem('accessToken');
-                        if (token) headers['Authorization'] = 'Bearer ' + token;
                         var title = conversationMessages[0].role === 'user' ? (conversationMessages[0].content || '저장된 대화').substring(0, 100) : '저장된 대화';
                         try {
-                            var res = await fetch(API_BASE + '/v1/conversations', {
+                            var res = await fetchWithAuth(API_BASE + '/v1/conversations', {
                                 method: 'POST',
-                                headers: headers,
-                                body: JSON.stringify({ title: title, messages: conversationMessages }),
-                                credentials: 'include'
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ title: title, messages: conversationMessages })
                             });
                             var data = await res.json().catch(function () { return {}; });
-                            if (res.status === 401) {
-                                alert('로그인이 필요합니다.');
-                                return;
-                            }
+                            if (res.status === 401) return; // fetchWithAuth에서 핸들링함
+
                             if (data.success) {
                                 alert('대화가 저장되었습니다.');
                                 loadRecentDiscoveries();
