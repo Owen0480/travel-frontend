@@ -23,7 +23,6 @@ function App() {
 
             if (!hasAccessToken) {
                 try {
-                    // Access Token이 없으면 Refresh Token(쿠키)으로 재발급 시도
                     const response = await api.post('/auth/refresh');
                     localStorage.setItem('accessToken', response.data.accessToken);
                     if (response.data.email) localStorage.setItem('email', response.data.email);
@@ -72,7 +71,7 @@ function App() {
                     <Route path="/" element={isAuthenticated ? <Navigate to="/chat" replace /> : <Navigate to="/login" replace />} />
                     <Route path="/chat" element={isAuthenticated ? <Chat /> : <Navigate to="/login" replace />} />
                     <Route path="/mypage" element={isAuthenticated ? <MyPage /> : <Navigate to="/login" replace />} />
-                    <Route path="/image-search" element={isAuthenticated ? <ImageSearch /> : <Navigate to="/login" replace />} />
+                    <Route path="/image-search" element={<ImageSearch />} />
 
                     <Route path="*" element={<Navigate to="/chat" />} />
                 </Routes>

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+// 프로젝트 기본 API (auth, chat 등) — 8080 등 기존 백엔드
 const api = axios.create({
-    baseURL: 'http://localhost:8080/api', // Backend URL
+    baseURL: 'http://localhost:8080/api',
     withCredentials: true,
 });
 
