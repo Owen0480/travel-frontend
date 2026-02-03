@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Visual Search Destination Recommendations</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1392ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101a22",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-[#0d161b] dark:text-slate-50 min-h-screen">
+    <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <!-- Top Navigation Bar -->
+            <header
+                class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7eef3] dark:border-b-slate-800 px-10 py-3 bg-white dark:bg-background-dark sticky top-0 z-50">
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-4 text-primary">
+                        <div class="size-6">
+                            <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_6_319)">
+                                    <path
+                                        d="M8.57829 8.57829C5.52816 11.6284 3.451 15.5145 2.60947 19.7452C1.76794 23.9758 2.19984 28.361 3.85056 32.3462C5.50128 36.3314 8.29667 39.7376 11.8832 42.134C15.4698 44.5305 19.6865 45.8096 24 45.8096C28.3135 45.8096 32.5302 44.5305 36.1168 42.134C39.7033 39.7375 42.4987 36.3314 44.1494 32.3462C45.8002 28.361 46.2321 23.9758 45.3905 19.7452C44.549 15.5145 42.4718 11.6284 39.4217 8.57829L24 24L8.57829 8.57829Z"
+                                        fill="currentColor"></path>
+                                </g>
+                                <defs>
+                                    <clippath id="clip0_6_319">
+                                        <rect fill="white" height="48" width="48"></rect>
+                                    </clippath>
+                                </defs>
+                            </svg>
+                        </div>
+                        <h2 class="text-[#0d161b] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+                            TravelAI</h2>
+                    </div>
+                    <label class="flex flex-col min-w-40 !h-10 max-w-64">
+                        <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+                            <div
+                                class="text-[#4c799a] flex border-none bg-[#e7eef3] dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+                                <span class="material-symbols-outlined text-xl">search</span>
+                            </div>
+                            <input
+                                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d161b] dark:text-white focus:outline-0 focus:ring-0 border-none bg-[#e7eef3] dark:bg-slate-800 focus:border-none h-full placeholder:text-[#4c799a] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
+                                placeholder="Quick search..." value="" />
+                        </div>
+                    </label>
+                </div>
+                <div class="flex flex-1 justify-end gap-8">
+                    <div class="flex items-center gap-9">
+                        <a class="text-[#0d161b] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                            href="#">Discover</a>
+                        <a class="text-[#0d161b] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                            href="#">Chat</a>
+                        <a class="text-[#0d161b] dark:text-slate-200 text-sm font-medium leading-normal hover:text-primary transition-colors"
+                            href="#">My Trips</a>
+                    </div>
+                    <button
+                        class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-slate-50 text-sm font-bold leading-normal tracking-[0.015em]">
+                        <span class="truncate">New Search</span>
+                    </button>
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#e7eef3] dark:border-slate-700"
+                        data-alt="User profile avatar"
+                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDzOCobHznAkO3GkA5vpTX1WSVDEw4WgGxtl6rZg_NfeEOv24SSR6qKdO9aKtaf3kqHuaV86q9KhDj1dOF5ekGW-Ceka4seI9MFOnqtVb4Yrqh-2GZoiSAk6bmc4qIsQKc2zIeDZ-h2mHLRbX1EeMF1cPQoqpAMqmdPnmrkUQcl3i7dxk6x0ABiVbwLPx5_9l0h0a8D5zpSs0w_-nENTIe1Yg3kk9082-aOGT8bEb49rQL0unfCJqbGuHJzzYu4QQrD1xeLJLc4Gqw");'>
+                    </div>
+                </div>
+            </header>
+            <main class="flex-1 flex justify-center py-8">
+                <div class="layout-content-container flex flex-col max-w-[1100px] flex-1 px-4">
+                    <!-- Upload Hero Zone -->
+                    <div class="flex flex-col mb-10">
+                        <div
+                            class="flex flex-col items-center gap-6 rounded-xl border-2 border-dashed border-primary/40 bg-white dark:bg-slate-800/50 px-6 py-14 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer">
+                            <div class="flex max-w-[480px] flex-col items-center gap-3">
+                                <span class="material-symbols-outlined text-primary text-5xl">cloud_upload</span>
+                                <p
+                                    class="text-[#0d161b] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] text-center">
+                                    Upload your inspiration</p>
+                                <p
+                                    class="text-[#4c799a] text-base font-normal leading-normal max-w-[480px] text-center">
+                                    Drag and drop a photo of a beach, city, or landscape to find global matches based on
+                                    colors and architecture.
+                                </p>
+                            </div>
+                            <div class="flex gap-3">
+                                <button
+                                    class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-5 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+                                    <span class="truncate">Choose Image</span>
+                                </button>
+                                <button
+                                    class="flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-5 bg-[#e7eef3] dark:bg-slate-700 text-[#0d161b] dark:text-white text-sm font-bold leading-normal tracking-[0.015em]">
+                                    <span class="truncate">Browse Gallery</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Page Heading with Match Info -->
+                    <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+                        <div class="flex min-w-72 flex-col gap-1">
+                            <div class="flex items-center gap-3 mb-1">
+                                <div class="w-12 h-12 rounded-lg bg-cover bg-center border-2 border-primary"
+                                    data-alt="User uploaded inspiration image"
+                                    style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRNs4OcocwIvGGm61U7WJ1yakcoIj44LvAYWorGi2qMYicDIXaOxpm4YxHvCXnkQPWrweIMcBH32yiHy5NLLY8VBkbe8UXkHqkLwsv4Sf2GUIePy2C9iMVAKfX_TP21nLP8Wqi8ZVxBwPA41gvDDm_yji2dalO2-xopYKVoCOrkvrRCoG4F-2xzsFQz9KB4NBqEf5AivKFue44Ybg5iph5wlu5N0aPNL-bE3ApOnIvb9loSPuJdFGjlYCyMjSVE1hAMr6WLMe1ARk');">
+                                </div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-primary">Inspiration:
+                                    Coastal Cliffs</span>
+                            </div>
+                            <h1
+                                class="text-[#0d161b] dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">
+                                12 Similar Destinations Found</h1>
+                            <p class="text-[#4c799a] text-base font-normal leading-normal">Our AI matched the textures,
+                                colors, and coastal vibes from your photo.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button
+                                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#e7eef3] dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold">
+                                <span class="material-symbols-outlined text-lg">filter_list</span>
+                                Filter
+                            </button>
+                            <button
+                                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#e7eef3] dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold">
+                                <span class="material-symbols-outlined text-lg">sort</span>
+                                Relevance
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Destination Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-24">
+                        <!-- Card 1 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input checked=""
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Scenic view of Amalfi Coast, Italy"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuDGd707_DBslCq0cLSPbh1cZHU3v0__srVANt1eHZlb3wrL5lptPCv2ULZ9GgPQlVXnc7olCLO-75dLOAEWMk6CI3pTznrqV-Rn2mpZHVaqQGxDPiFUFtcYKTtK58zTt_Qu4HagBUiuHHcA8EEwn9mfqSSZfjUEXqReYDCHkkbVlwJLIVN0TnzhEQezmk-03eUQ6_sfoF8wipXJ79ymFcx_E9lNvkOUK1TGVLL8Fn4KKBSznpVcoHhq7W3eVTSzKSw9JQyarwbk5Qg");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    98% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Amalfi Coast</h3>
+                                <p class="text-white/80 text-xs font-medium">Italy • Coastal</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                        <!-- Card 2 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Blue dome churches in Santorini, Greece"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBDabLyxAbWD9uzqbFliEpnjBwdH84231MNiaLBeTm_ZKEt_W9Ol6cugFjD3CrqcZcjKVOhepe5UlYIr7RkJq7cMTMF4eN0NphZ4AMzSUo0OTXkbXq6zbEhsUv407wfGpKdndHtJda4W4gLbRULiaUFiSRT0T-iqK0b6DeqdfLv2m5M16Zcp4ASimXDAM_bgdyTh8dWE6vwZvAwdozR2ZBv9mtKUHsg-QReA4Z65WdqQbjzuT9LJtakyD3A9H-BNdGIiRmLta3YmH4");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    95% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Santorini</h3>
+                                <p class="text-white/80 text-xs font-medium">Greece • Island</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                        <!-- Card 3 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input checked=""
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Navagio Beach in Zakynthos, Greece"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAITw-vJ90FyvPKX2eKYk1u1xZ7lqBbG_oGFMnqQBMoRgH3pEE6ULyFENpUCBK6GmREZIbfNbD41tZ9jbWyYargy2D6VoSdoTKqjN5q1JJm_uueMJkS99rK3M1pHzOuC7NjG8v3ERBmcvYLDMpJI0X7Squ4TU0-9q3pqRTl8u45ZBfuK_cHifBjL0lQCLcb-W_TcCfbqhVxzwlOqq3OFYJFDI--AFgzsrUdF1G6lZT3XcqXWyxzgH5w77tbASyFEQTjf1Ggkzl6vvI");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    92% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Zakynthos</h3>
+                                <p class="text-white/80 text-xs font-medium">Greece • Beach</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                        <!-- Card 4 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Aerial view of Hvar, Croatia"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuCnhLpi0yzPRiJFkCTJ5L3aw9GPuBWfHrJDibpsj6LqVq5MkbTy2idLajP78HjQL9JFAJEj3GNIWoLK6Qfa_AApgLh-pliaFPRbe4CKvIqZca5hiYLmLqsTaRBSTKngiLckdD17I70SXWDVlZnYafObyHOweZqtiYak8m2c_TFkb7X-xWoQYpFiCK7G9kYUL1mS_sSboqZv_itSKEwklqAlRqjTEOxhijjSvFNC8so-CMf95QrwBPfSEaERiuQ3iK66goCqUp08BlQ");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    88% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Hvar</h3>
+                                <p class="text-white/80 text-xs font-medium">Croatia • Mediterranean</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                        <!-- Card 5 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Promenade des Anglais in Nice, France"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuCswreE5G6ZvxjOyTMk7lzOWodlMRdNCdGgdtw_q8qD5RyDcwMixre71lQqwUqhU0V9kt6PLIvEJOZhJbsh_58YIG0L0sB_9Oi3lu-wGFCfvoWGDhImIN9HmuAdAhEocgue8FrZLbwJ2vQ-D01P0VKLIkxUGr-nJASjKYV4WAyVO7etPPp5oALLyzsm1OqPGTT9LEx5n_dunmMEl-ik6XPP-IfSGuvP1Xczr5uwuKc6k5UcJF9xgWihRQ9Y3lm9slEekZwe8sQLbmY");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    85% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Nice</h3>
+                                <p class="text-white/80 text-xs font-medium">France • French Riviera</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                        <!-- Card 6 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Colorful houses in Portofino, Italy"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQYb5cDru9IN1Cix1ksglBpl3RuohO25TnrgIRmVyipzAb7Rc_gvgFxffqVFrmJ55KiK2LSOQVrvnCM4-aYjh4T2yZLpVah597rHwYLEnVSI5btx0_9YLN1oSQD_Jr1fBhnudQ_Lslwo6LsKmLSfdMNSS-mQquAuG97z6hg9gs7ff10JdlctkmqEbwScXE2iwy9b0KHQS7wxMwePlYOSYaoLPaNjEp8mO6t8lIMFlAAt1AinGoD9BUG19KlzUXuTBGvkC5IYu9EKY");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    84% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Portofino</h3>
+                                <p class="text-white/80 text-xs font-medium">Italy • Luxury</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                        <!-- Card 7 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Cliffs of Moher in Ireland"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuC2_3tKpknBRLcVUZhDOkE0ASVnoY-fDwnWm6uyQaqLJ7pcSXgY2m_PR5PxE3rPLeT15372ltZjDdVMhLS3vEG88PCRkoR8qO_fdBe0PRg3WbpEX6sLJjRIAli9-_xyr9XMK4_khmWyggVVCy5j7wl1xU73AKFQUfz8rYe6kittL7baqWLbl2pw2E-U3alLaoLUuGR5PKIX7db5PmmvJI6QiDPhfA9fVAg2_6hk7MOVrVd6RXOkdDI6giX-oTLTXn79VVxnRPCPiGQ");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    81% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Cliffs of Moher</h3>
+                                <p class="text-white/80 text-xs font-medium">Ireland • Dramatic</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                        <!-- Card 8 -->
+                        <div
+                            class="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-[#e7eef3] dark:border-slate-700">
+                            <div class="absolute top-3 right-3 z-10">
+                                <input
+                                    class="w-6 h-6 rounded text-primary focus:ring-primary border-white/40 bg-black/20 backdrop-blur-sm cursor-pointer"
+                                    type="checkbox" />
+                            </div>
+                            <div class="bg-cover bg-center h-64 flex flex-col justify-end p-4 relative"
+                                data-alt="Twelve Apostles rock formation in Australia"
+                                style='background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%), url("https://lh3.googleusercontent.com/aida-public/AB6AXuAkks03KkXyXpbg96otq7d9ZXAZ8X4U0cJf1TsheXGXwrf2y--SY69YZkLuuOpWzZEIew2m5Zwbx35iasYFtBIY2gzNaEqpV6Fkxh-92HrtzvT-SbrsHtIWzVuAzM33Zyfl5k96DXKcvGwmam4-MfrIDGOwIStL5XXHS5rTtGuEs6AGQZfBqJBaDitE1pS8fKiNtn-hcXTIciDrGdxnsVdeN5ow0fcCNHBfP_zaTjZJCvdC3RKyOLO0kjGnkUa6QmqLIiC-fy3UzSc");'>
+                                <div
+                                    class="absolute top-3 left-3 px-2 py-1 rounded bg-primary text-white text-[10px] font-bold tracking-widest uppercase">
+                                    79% Match</div>
+                                <h3 class="text-white text-lg font-bold leading-tight">Great Ocean Road</h3>
+                                <p class="text-white/80 text-xs font-medium">Australia • Nature</p>
+                            </div>
+                            <div class="p-4 flex justify-between items-center">
+                                <button class="text-primary text-sm font-bold hover:underline">View details</button>
+                                <span
+                                    class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">favorite</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <!-- Sticky Compare Action Bar -->
+            <div class="fixed bottom-8 left-0 right-0 z-50 flex justify-center pointer-events-none">
+                <button
+                    class="pointer-events-auto flex items-center justify-center gap-4 h-14 px-8 bg-primary text-white rounded-full shadow-2xl hover:scale-105 transition-transform active:scale-95">
+                    <span class="material-symbols-outlined">compare_arrows</span>
+                    <span class="font-bold text-base">Compare 2 Selected Destinations</span>
+                    <div class="w-px h-6 bg-white/20"></div>
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 1. 이미지 선택 및 업로드 함수
+        async function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 화면에 로딩 표시 (선택사항)
+            console.log("분석 시작...");
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // 2. 파이썬 서버(FastAPI)로 데이터 전송
+                const response = await fetch('http://127.0.0.1:8000/api/v1/recommend/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 3. 받은 결과를 화면에 뿌려주기
+                    // 디자인 파일에 있는 ID값들에 맞춰서 내용을 바꿉니다.
+
+                    // 메인 결과 이미지 변경
+                    const resImg = document.querySelector('img[alt="Selected destination"]');
+                    if (resImg) resImg.src = `http://127.0.0.1:8000/static/images/${data.best_match_file}`;
+
+                    // 장소 이름 변경
+                    const resTitle = document.querySelector('h3');
+                    if (resTitle) resTitle.innerText = data.place_name;
+
+                    // 추천 가이드 내용 변경
+                    const resGuide = document.querySelector('p.text-white\\/80');
+                    if (resGuide) resGuide.innerText = data.guide;
+
+                    // 네이버 지도 버튼 연결을 위해 장소명 저장
+                    window.currentPlaceName = data.place_name;
+
+                    alert("분석 완료!");
+                }
+            } catch (error) {
+                console.error("서버 연결 실패:", error);
+                alert("서버가 켜져 있는지 확인해주세요! (8000포트)");
+            }
+        }
+
+        // 4. 네이버 지도 이동 함수
+        function goMap() {
+            if (!window.currentPlaceName) {
+                alert("먼저 사진을 분석해주세요.");
+                return;
+            }
+            window.open(`https://map.naver.com/v5/search/${encodeURIComponent(window.currentPlaceName)}`);
+        }
+
+        // 기존 디자인의 업로드 버튼에 함수 연결
+        // (디자인 파일의 input 태그에 onchange="handleFile(event)"가 있는지 꼭 확인!)
+    </script>
+</body>
+
+</html>
