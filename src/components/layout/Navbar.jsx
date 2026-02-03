@@ -19,10 +19,8 @@ const Navbar = () => {
     };
 
     if (!isAuthenticated) return null;
-<<<<<<< HEAD
-=======
+
     if (location.pathname === '/chat' || location.pathname === '/mypage' || location.pathname === '/travel-style') return null;
->>>>>>> mei
 
     // Users requested to remove the header code.
     return null;
