@@ -4,7 +4,6 @@
  * POST /travel-style/analyze { interests: [한국어 3개] }
  */
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 // Spring Boot에서 FastAPI 결과를 받아 DB 저장 후 반환
@@ -32,7 +31,6 @@ const FALLBACK_OPTIONS = [
 ];
 
 const TravelStyle = () => {
-    const navigate = useNavigate();
     const [options, setOptions] = useState(FALLBACK_OPTIONS);  // 초기값으로 항상 선택지 표시
     const [selected, setSelected] = useState([]);
     const [result, setResult] = useState(null);
@@ -90,26 +88,6 @@ const TravelStyle = () => {
     return (
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', background: BG_LIGHT, minHeight: '100vh', color: TEXT_MAIN, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
             <div style={{ maxWidth: 800, width: '100%', background: '#fff', borderRadius: 12, boxShadow: `0 25px 50px -12px rgba(19,146,236,0.08)`, border: `1px solid rgba(19,146,236,0.1)`, overflow: 'hidden', padding: '32px' }}>
-                <button
-                    type="button"
-                    onClick={() => navigate('/chat')}
-                    style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '10px 18px',
-                        marginBottom: 20,
-                        background: 'rgba(19,146,236,0.08)',
-                        border: `1px solid rgba(19,146,236,0.2)`,
-                        borderRadius: 10,
-                        color: PRIMARY,
-                        fontSize: 14,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                    }}
-                >
-                    ← 뒤로가기
-                </button>
                 <div style={{ padding: '0 0 16px', textAlign: 'center' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 12, background: 'rgba(19,146,236,0.1)', borderRadius: '50%', marginBottom: 16, fontSize: 24, color: PRIMARY }}>✈️</div>
                     <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 8, color: TEXT_MAIN, letterSpacing: '-0.02em' }}>
