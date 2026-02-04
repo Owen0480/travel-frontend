@@ -6,6 +6,7 @@ const ImageSearch = () => {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [results, setResults] = useState([]);
+    const [preference, setPreference] = useState('');
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -26,6 +27,7 @@ const ImageSearch = () => {
         try {
             const formData = new FormData();
             formData.append('file', selectedImage);
+            formData.append('preference', preference || '');
             const res = await fetch(`${SPRING_API}/api/v1/recommend/analyze`, { method: 'POST', body: formData });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || data.detail || '요청 실패');
@@ -125,6 +127,21 @@ const ImageSearch = () => {
                             <div className="flex flex-col mb-10">
                                 <div className={`flex flex-col items-center gap-6 rounded-xl border-2 border-dashed ${selectedImage ? 'border-primary bg-primary/5' : 'border-primary/40 bg-white dark:bg-slate-800/50'} px-6 py-14 hover:border-primary hover:bg-primary/5 transition-all`}>
 
+                                    <div className="w-full max-w-[520px]">
+                                        <label className="block text-sm font-semibold text-[#0d161b] dark:text-white mb-2">
+                                            원하는 분위기/취향 (선택)
+                                        </label>
+                                        <input
+                                            value={preference}
+                                            onChange={(e) => setPreference(e.target.value)}
+                                            placeholder="예) 조용한, 감성, 사진스팟, 가족여행, 맛집 위주"
+                                            className="w-full rounded-lg border border-[#e7eef3] dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+                                        />
+                                        <p className="text-xs text-[#4c799a] mt-2">
+                                            입력한 취향은 추천 설명(guide) 생성과 근거 검색에 반영됩니다.
+                                        </p>
+                                    </div>
+
                                     {previewUrl ? (
                                         <div className="flex flex-col items-center gap-4">
                                             <div className="w-64 h-64 rounded-xl overflow-hidden shadow-lg border-4 border-white dark:border-slate-700">
@@ -214,7 +231,13 @@ const ImageSearch = () => {
                                                     <h3 className="text-white text-lg font-bold leading-tight drop-shadow-md">{res.name}</h3>
                                                     <p className="text-white/80 text-xs font-medium drop-shadow-sm">{res.location}</p>
                                                 </div>
-                                                <div className="p-4 flex justify-between items-center bg-white dark:bg-slate-800 relative z-20">
+                                                <div className="p-4 bg-white dark:bg-slate-800 relative z-20">
+                                                    {res.desc && (
+                                                        <p className="text-[#4c799a] dark:text-slate-300 text-sm leading-snug mb-3">
+                                                            {res.desc}
+                                                        </p>
+                                                    )}
+                                                    <div className="flex justify-between items-center">
                                                     <button
                                                         type="button"
                                                         onClick={() => openMap(res.name, res.location)}
@@ -223,6 +246,7 @@ const ImageSearch = () => {
                                                         상세 보기
                                                     </button>
                                                     <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors cursor-pointer">share</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
