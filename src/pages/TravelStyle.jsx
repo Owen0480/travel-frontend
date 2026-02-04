@@ -12,6 +12,15 @@ const travelStyleApi = axios.create({
     timeout: 0,  // 타임아웃 없음
 });
 
+// 요청 시 로그인 토큰 자동 추가
+travelStyleApi.interceptors.request.use((config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
 const PRIMARY = '#1392ec';
 const BG_LIGHT = '#f6f7f8';
 const TEXT_MAIN = '#0d161b';
@@ -36,7 +45,24 @@ const TravelStyle = () => {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [displayName, setDisplayName] = useState(localStorage.getItem('fullname') || localStorage.getItem('email') || '');
     const resultRef = useRef(null);
+
+    // 사용자 이름(이메일 prefix) API에서 최신으로 가져오기 (숫자 ID 대신)
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            travelStyleApi.get('/users/info')
+                .then(({ data }) => {
+                    const name = data?.data?.fullName;
+                    if (name) {
+                        setDisplayName(name);
+                        localStorage.setItem('fullname', name);
+                    }
+                })
+                .catch(() => {});
+        }
+    }, []);
 
     useEffect(() => {
         travelStyleApi.get('/travel-style/options')
@@ -79,15 +105,44 @@ const TravelStyle = () => {
             const { data } = await travelStyleApi.post('/travel-style/analyze', { interests: selected });
             setResult(data.analysis);
         } catch (err) {
-            setError(err.response?.data?.detail || err.message || '서버 연결에 실패했습니다.');
+            const serverMessage =
+                err?.response?.data?.detail ||
+                err?.response?.data?.message ||
+                err?.response?.data?.error;
+
+            // err.response가 없으면(대부분 서버 미실행/프록시 미설정/CORS) 브라우저가 "Network Error"로만 표기함
+            const clientHint = !err?.response
+                ? '서버에 연결할 수 없습니다. Spring Boot(8080)가 실행 중인지 확인해 주세요.'
+                : null;
+
+            setError(serverMessage || clientHint || err?.message || '서버 연결에 실패했습니다.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', background: BG_LIGHT, minHeight: '100vh', color: TEXT_MAIN, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', background: BG_LIGHT, minHeight: '100vh', color: TEXT_MAIN, fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, boxSizing: 'border-box' }}>
             <div style={{ maxWidth: 800, width: '100%', background: '#fff', borderRadius: 12, boxShadow: `0 25px 50px -12px rgba(19,146,236,0.08)`, border: `1px solid rgba(19,146,236,0.1)`, overflow: 'hidden', padding: '32px' }}>
+                {displayName && (
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        marginBottom: 16,
+                    }}>
+                        <span style={{
+                            fontSize: 13,
+                            fontWeight: 500,
+                            color: TEXT_MUTED,
+                            background: 'rgba(19,146,236,0.08)',
+                            padding: '6px 14px',
+                            borderRadius: 20,
+                            letterSpacing: '-0.01em',
+                        }}>
+                            👤 {displayName}님
+                        </span>
+                    </div>
+                )}
                 <div style={{ padding: '0 0 16px', textAlign: 'center' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: 12, background: 'rgba(19,146,236,0.1)', borderRadius: '50%', marginBottom: 16, fontSize: 24, color: PRIMARY }}>✈️</div>
                     <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 8, color: TEXT_MAIN, letterSpacing: '-0.02em' }}>
@@ -158,7 +213,7 @@ const TravelStyle = () => {
                         {result && (
                             <div
                                 ref={resultRef}
-                                style={{ marginTop: 24, width: '100%', maxWidth: 520, padding: 20, borderRadius: 12, border: `1px solid rgba(19,146,236,0.2)`, background: 'rgba(19,146,236,0.05)', textAlign: 'center' }}
+                                style={{ marginTop: 24, width: '100%', maxWidth: 520, padding: 20, borderRadius: 12, border: 'none', background: 'rgba(19,146,236,0.05)', textAlign: 'center' }}
                             >
                                 <p style={{ fontSize: 18, fontWeight: 600, color: TEXT_MAIN }}>
                                     {result.matched_type} — {result.user_interests?.join(', ')}
@@ -175,7 +230,7 @@ const TravelStyle = () => {
                                         <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: TEXT_MAIN }}>✈️ 추천 여행지</p>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                             {result.type_info.destinations.map((d, idx) => (
-                                                <div key={idx} style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.5)', borderRadius: 10, border: '1px solid rgba(19,146,236,0.15)' }}>
+                                                <div key={idx} style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.5)', borderRadius: 10, border: 'none' }}>
                                                     <span style={{ fontWeight: 600, color: PRIMARY }}>{d.name}</span>
                                                     <span style={{ fontSize: 12, color: TEXT_MUTED, marginLeft: 8 }}>{d.desc}</span>
                                                 </div>
