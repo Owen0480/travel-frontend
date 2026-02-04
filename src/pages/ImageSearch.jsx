@@ -214,13 +214,7 @@ const ImageSearch = () => {
                                                     <h3 className="text-white text-lg font-bold leading-tight drop-shadow-md">{res.name}</h3>
                                                     <p className="text-white/80 text-xs font-medium drop-shadow-sm">{res.location}</p>
                                                 </div>
-                                                <div className="p-4 bg-white dark:bg-slate-800 relative z-20">
-                                                    {res.desc && (
-                                                        <p className="text-[#4c799a] dark:text-slate-300 text-sm leading-snug mb-3 line-clamp-3">
-                                                            {res.desc}
-                                                        </p>
-                                                    )}
-                                                    <div className="flex justify-between items-center">
+                                                <div className="p-4 flex justify-between items-center bg-white dark:bg-slate-800 relative z-20">
                                                     <button
                                                         type="button"
                                                         onClick={() => openMap(res.name, res.location)}
@@ -229,7 +223,6 @@ const ImageSearch = () => {
                                                         상세 보기
                                                     </button>
                                                     <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors cursor-pointer">share</span>
-                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
