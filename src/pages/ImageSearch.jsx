@@ -16,24 +16,67 @@ const ImageSearch = () => {
         }
     };
 
-    const analyzeImage = () => {
+    const SPRING_API = 'http://localhost:8081';
+    const FASTAPI_IMAGES = 'http://localhost:8000/images';
+
+    const analyzeImage = async () => {
         if (!selectedImage) return;
         setIsAnalyzing(true);
-
-        // Mock API call
-        setTimeout(() => {
+        setResults([]);
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedImage);
+            const res = await fetch(`${SPRING_API}/api/v1/recommend/analyze`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || data.detail || '요청 실패');
+            // 백엔드가 results 배열을 주면 그대로, 단일 객체(best_match_file 등)면 배열로 감싼다
+            let list = data.results;
+            if (!list && data.success && data.place_name) {
+                list = [{
+                    place_name: data.place_name,
+                    address: data.address || '',
+                    image_file: data.best_match_file,
+                    score: data.best_score ?? 0,
+                    guide: data.guide || '',
+                }];
+            }
+            if (list && list.length > 0) {
+                setResults(list.map((item, i) => ({
+                    id: i + 1,
+                    name: item.place_name || '',
+                    match: `${Math.round((item.score ?? 0) * 100)}%`,
+                    location: (item.address || '').slice(0, 40),
+                    desc: item.guide || '',
+                    img: item.image_file ? `${FASTAPI_IMAGES}/${encodeURIComponent(item.image_file)}` : '',
+                })));
+            } else {
+                alert(data.ai_analysis || data.message || '매칭된 여행지가 없습니다.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('서버 연결을 확인해주세요. (Spring Boot 8081, FastAPI 8000)\n\n' + (err.message || err));
+        } finally {
             setIsAnalyzing(false);
-            setResults([
-                { id: 1, name: '스위스 알프스', match: '98%', location: 'Swiss • Mountain', desc: '비슷한 설산과 맑은 호수가 있는 스위스 알프스입니다.', img: 'https://images.unsplash.com/photo-1531219432768-9f540ce91ef3?auto=format&fit=crop&w=500' },
-                { id: 2, name: '홋카이도 비에이', match: '85%', location: 'Japan • Snow', desc: '눈 덮인 고요한 분위기가 닮은 홋카이도 비에이입니다.', img: 'https://images.unsplash.com/photo-1542640244-7e672d6cef21?auto=format&fit=crop&w=500' },
-                { id: 3, name: '제주도 한라산', match: '72%', location: 'Korea • Mountain', desc: '한국의 아름다운 설경을 자랑하는 한라산입니다.', img: 'https://images.unsplash.com/photo-1549467793-ee6a17b88496?auto=format&fit=crop&w=500' },
-                { id: 4, name: '오스트리아 할슈타트', match: '68%', location: 'Austria • Lake', desc: '호수와 산이 어우러진 동화 같은 마을입니다.', img: 'https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&w=500' }
-            ]);
-        }, 2000);
+        }
+    };
+
+    const openMap = (name, address) => {
+        const query = [name, address].filter(Boolean).join(' ');
+        if (query) window.open(`https://map.naver.com/v5/search/${encodeURIComponent(query)}`, '_blank');
     };
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-[#0d161b] dark:text-slate-50 min-h-screen font-display">
+            {/* 로딩 오버레이 */}
+            {isAnalyzing && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="flex flex-col items-center gap-4 px-8 py-6 rounded-2xl bg-white dark:bg-slate-800 shadow-xl min-w-[260px]">
+                        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                        <p className="text-[#0d161b] dark:text-white font-semibold">AI가 사진을 분석하고 있습니다...</p>
+                        <p className="text-[#4c799a] text-sm">잠시만 기다려 주세요</p>
+                    </div>
+                </div>
+            )}
             <div className="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
                 <div className="layout-container flex h-full grow flex-col">
 
@@ -172,7 +215,13 @@ const ImageSearch = () => {
                                                     <p className="text-white/80 text-xs font-medium drop-shadow-sm">{res.location}</p>
                                                 </div>
                                                 <div className="p-4 flex justify-between items-center bg-white dark:bg-slate-800 relative z-20">
-                                                    <button className="text-primary text-sm font-bold hover:underline">상세 보기</button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openMap(res.name, res.location)}
+                                                        className="text-primary text-sm font-bold hover:underline"
+                                                    >
+                                                        상세 보기
+                                                    </button>
                                                     <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors cursor-pointer">share</span>
                                                 </div>
                                             </div>
