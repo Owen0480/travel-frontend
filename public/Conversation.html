@@ -131,13 +131,14 @@
                     </div>
                     <!-- Actions -->
                     <div class="flex flex-col gap-2">
-                        <button id="newRecommendationBtn"
-                            class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                        <button id="newRecommendationBtn" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white shadow-lg
+                            shadow-primary/20 hover:bg-primary/90 transition-all">
                             <span class="material-symbols-outlined">add</span>
                             <p class="text-sm font-semibold">New Recommendation</p>
                         </button>
                         <div class="mt-6 flex flex-col gap-1">
-                            <p class="px-4 text-[10px] font-bold text-[#4c799a] uppercase tracking-widest mb-2">Recent
+                            <p class="px-4 text-[10px] font-bold text-[#4c799a] uppercase tracking-widest mb-2">
+                                Recent
                                 Discoveries</p>
                             <div id="recentDiscoveriesList" class="flex flex-col gap-1">
                                 <p class="px-4 py-2 text-[11px] text-[#4c799a]">불러오는 중...</p>
@@ -313,6 +314,29 @@
                 var newRecommendationBtn = document.getElementById('newRecommendationBtn');
                 var chatHeaderTitle = document.getElementById('chatHeaderTitle');
                 var conversationMessages = [];
+                var currentThreadId = null;
+
+                // --- Session ID Generation ---
+                function generateSessionId() {
+                    var email = localStorage.getItem('email') || 'anonymous';
+                    var userId = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ''); // alphanumeric only
+                    var timestamp = new Date().getTime();
+                    return userId + '_' + timestamp;
+                }
+
+                function startNewChat() {
+                    messageList.innerHTML = '';
+                    conversationMessages = [];
+                    currentThreadId = generateSessionId();
+                    if (chatHeaderTitle) chatHeaderTitle.textContent = "Travel AI Chat";
+
+                    // 초기 인사말
+                    appendAiMessage("안녕하세요! 어떤 여행지를 찾고 계신가요? 예산, 기간, 선호하는 테마를 말씀해 주세요.");
+                }
+
+                if (newRecommendationBtn) {
+                    newRecommendationBtn.addEventListener('click', startNewChat);
+                }
 
                 // --- Token Refresh Helper ---
                 async function fetchWithAuth(url, options) {
@@ -518,15 +542,33 @@
                     appendUserMessage(text);
                     appendThinking();
 
+                    if (!currentThreadId) {
+                        currentThreadId = generateSessionId();
+                    }
+
                     try {
                         var res = await fetchWithAuth(API_BASE + '/v1/chat/travel', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ message: text })
+                            body: JSON.stringify({
+                                message: text,
+                                thread_id: currentThreadId
+                            })
                         });
                         var data = await res.json().catch(function () { return {}; });
                         removeThinking();
-                        var reply = (data && data.data && data.data.response) ? data.data.response : (data.data ? JSON.stringify(data.data) : (data.message || (res.ok ? '응답이 비어 있습니다.' : '오류가 발생했습니다.')));
+
+                        var reply = "";
+                        if (data && data.data && data.data.answer) {
+                            reply = data.data.answer;
+                            // 백엔드에서 반환한 threadId가 있으면 업데이트 (보통 동일함)
+                            if (data.data.thread_id) {
+                                currentThreadId = data.data.thread_id;
+                            }
+                        } else {
+                            reply = (data.message || (res.ok ? '응답을 이해하지 못했습니다.' : '서버 오류가 발생했습니다.'));
+                        }
+
                         appendAiMessage(reply);
                     } catch (err) {
                         removeThinking();
@@ -566,17 +608,13 @@
                         }
                     });
                 }
-                if (newRecommendationBtn) {
-                    newRecommendationBtn.addEventListener('click', function () {
-                        messageList.innerHTML = '';
-                        conversationMessages = [];
-                        if (chatHeaderTitle) chatHeaderTitle.textContent = 'Travel AI Chat';
-                        appendAiMessage("안녕하세요! 어떤 여행 계획을 도와드릴까요?");
-                    });
-                }
+                // --- Initialize ---
                 loadRecentDiscoveries();
-                // 초기 환영 메시지 추가
-                appendAiMessage("안녕하세요! 어떤 여행 계획을 도와드릴까요?");
+
+                // 페이지 로드 시 새로운 채팅 세션 시작
+                if (messageList.children.length === 0) {
+                    startNewChat();
+                }
             })();
 
         function openTravelStylePopup() {
