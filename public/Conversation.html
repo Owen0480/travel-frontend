@@ -52,6 +52,63 @@
             background-color: rgba(0, 0, 0, 0.1);
             border-radius: 10px;
         }
+
+        #travelStylePopup {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+        }
+
+        #travelStylePopup .popup-inner {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            border: none;
+            outline: none;
+        }
+
+        #travelStylePopup .popup-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(0, 0, 0, 0.06);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0d161b;
+            transition: background 0.2s;
+        }
+
+        #travelStylePopup .popup-close:hover {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        #travelStylePopup iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            vertical-align: top;
+            background: #fff;
+            border-radius: 16px;
+        }
     </style>
 </head>
 
@@ -103,15 +160,27 @@
                             <span class="material-symbols-outlined text-[20px]">person</span>
                             <p class="text-sm font-medium">My Page</p>
                         </div>
+
                         <div class="flex items-center gap-3 px-3 py-2 text-[#4c799a] hover:text-[#0d161b] cursor-pointer"
-                            onclick="window.parent.location.href='/travel_style.html'">
-                            <span class="material-symbols-outlined text-[20px]">help_outline</span>
-                            <p class="text-sm font-medium">Help Center</p>
+                            onclick="openTravelStylePopup()">
+                            <span class="material-symbols-outlined text-[20px]">travel_explore</span>
+                            <p class="text-sm font-medium">AI 여행 타입 분석</p>
                         </div>
                     </div>
                 </div>
             </div>
         </aside>
+
+        <!-- AI 여행 타입 분석 팝업 -->
+        <div id="travelStylePopup" onclick="if(event.target === this) closeTravelStylePopup()">
+            <div class="popup-inner" onclick="event.stopPropagation()">
+                <button type="button" class="popup-close" onclick="closeTravelStylePopup()" title="닫기" aria-label="닫기">
+                    <span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+                </button>
+                <iframe src="/travel_style.html" title="AI 여행 타입 분석"></iframe>
+            </div>
+        </div>
+
         <!-- Main Chat Area -->
         <main class="flex-1 flex flex-col relative bg-background-light dark:bg-background-dark">
             <!-- Header -->
@@ -509,6 +578,13 @@
                 // 초기 환영 메시지 추가
                 appendAiMessage("안녕하세요! 어떤 여행 계획을 도와드릴까요?");
             })();
+
+        function openTravelStylePopup() {
+            document.getElementById('travelStylePopup').style.display = 'flex';
+        }
+        function closeTravelStylePopup() {
+            document.getElementById('travelStylePopup').style.display = 'none';
+        }
     </script>
 </body>
 
