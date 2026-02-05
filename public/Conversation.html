@@ -519,7 +519,7 @@
                     appendThinking();
 
                     try {
-                        var res = await fetchWithAuth(API_BASE + '/v1/travel/test', {
+                        var res = await fetchWithAuth(API_BASE + '/v1/chat/travel', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ message: text })
