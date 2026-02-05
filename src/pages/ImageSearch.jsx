@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../api/axios';
 
 const ImageSearch = () => {
     const [selectedImage, setSelectedImage] = useState(null);
@@ -17,7 +18,6 @@ const ImageSearch = () => {
         }
     };
 
-    const SPRING_API = 'http://localhost:8080';
     const FASTAPI_IMAGES = 'http://localhost:8000/images';
 
     const analyzeImage = async () => {
@@ -28,9 +28,12 @@ const ImageSearch = () => {
             const formData = new FormData();
             formData.append('file', selectedImage);
             formData.append('preference', preference || '');
-            const res = await fetch(`${SPRING_API}/api/v1/recommend/analyze`, { method: 'POST', body: formData });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || data.detail || '요청 실패');
+
+            // fetch 대신 api(axios) 사용 (토큰 자동 포함)
+            const res = await api.post('/v1/recommend/analyze', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const data = res.data;
             // 백엔드가 results 배열을 주면 그대로, 단일 객체(best_match_file 등)면 배열로 감싼다
             let list = data.results;
             if (!list && data.success && data.place_name) {
@@ -56,7 +59,7 @@ const ImageSearch = () => {
             }
         } catch (err) {
             console.error(err);
-            alert('서버 연결을 확인해주세요. (Spring Boot 8081, FastAPI 8000)\n\n' + (err.message || err));
+            alert('서버 연결을 확인해주세요. (Spring Boot 8080, FastAPI 8000)\n\n' + (err.message || err));
         } finally {
             setIsAnalyzing(false);
         }
