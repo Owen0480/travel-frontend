@@ -17,7 +17,7 @@ const ImageSearch = () => {
         }
     };
 
-    const SPRING_API = 'http://localhost:8081';
+    const SPRING_API = 'http://localhost:8080';
     const FASTAPI_IMAGES = 'http://localhost:8000/images';
 
     const analyzeImage = async () => {
@@ -238,14 +238,14 @@ const ImageSearch = () => {
                                                         </p>
                                                     )}
                                                     <div className="flex justify-between items-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => openMap(res.name, res.location)}
-                                                        className="text-primary text-sm font-bold hover:underline"
-                                                    >
-                                                        상세 보기
-                                                    </button>
-                                                    <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors cursor-pointer">share</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openMap(res.name, res.location)}
+                                                            className="text-primary text-sm font-bold hover:underline"
+                                                        >
+                                                            상세 보기
+                                                        </button>
+                                                        <span className="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors cursor-pointer">share</span>
                                                     </div>
                                                 </div>
                                             </div>
