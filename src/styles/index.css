@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    /* 기본 색상 토큰 (채팅 / 로그인 공용) */
+    --primary: #1392ec;
+    --primary-hover: #0f78c8;
+    --glass-border: rgba(148, 163, 184, 0.4);
+    --text-muted: #6b7280;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
