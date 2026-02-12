@@ -21,23 +21,29 @@ function App() {
         isInitialMount.current = false;
 
         const checkAuth = async () => {
-            const hasAccessToken = !!localStorage.getItem('accessToken');
+            try {
+                const hasAccessToken = !!localStorage.getItem('accessToken');
 
-            if (!hasAccessToken) {
-                try {
-                    // Access Token이 없으면 Refresh Token(쿠키)으로 재발급 시도
-                    const response = await api.post('/auth/refresh');
-                    localStorage.setItem('accessToken', response.data.accessToken);
-                    if (response.data.email) localStorage.setItem('email', response.data.email);
+                if (!hasAccessToken) {
+                    try {
+                        // Access Token이 없으면 Refresh Token(쿠키)으로 재발급 시도 (타임아웃 8초)
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 8000);
+                        const response = await api.post('/auth/refresh', null, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        localStorage.setItem('accessToken', response.data.accessToken);
+                        if (response.data.email) localStorage.setItem('email', response.data.email);
+                        setIsAuthenticated(true);
+                    } catch (err) {
+                        console.log('No valid session found');
+                        setIsAuthenticated(false);
+                    }
+                } else {
                     setIsAuthenticated(true);
-                } catch (err) {
-                    console.log('No valid session found');
-                    setIsAuthenticated(false);
                 }
-            } else {
-                setIsAuthenticated(true);
+            } finally {
+                setIsLoading(false);
             }
-            setIsLoading(false);
         };
 
         checkAuth();
