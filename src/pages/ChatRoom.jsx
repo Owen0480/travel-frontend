@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import SockJS from 'sockjs-client'
 import Stomp from 'stompjs'
 import api from '../api/axios'
@@ -12,6 +12,7 @@ export default function ChatRoom() {
     const navigate = useNavigate()
     const [room, setRoom] = useState(null)
     const [roomName, setRoomName] = useState('')
+    const [rooms, setRooms] = useState([])
     const [messages, setMessages] = useState([])
     const [plans, setPlans] = useState([])
     const [input, setInput] = useState('')
@@ -20,10 +21,12 @@ export default function ChatRoom() {
     const [inviteCopied, setInviteCopied] = useState(false)
     const [planGenerating, setPlanGenerating] = useState(false)
     const [planError, setPlanError] = useState(null)
+    const [creating, setCreating] = useState(false)
+    const [leaving, setLeaving] = useState(false)
     const messagesEndRef = useRef(null)
     const stompRef = useRef(null)
 
-    const inviteUrl = roomId ? `${window.location.origin}/chat/room/${roomId}` : ''
+    const inviteUrl = roomId ? `${window.location.origin}/chat/${roomId}` : ''
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -33,22 +36,54 @@ export default function ChatRoom() {
         scrollToBottom()
     }, [messages])
 
+    const fetchRooms = async () => {
+        try {
+            const res = await api.get('/v1/chat/rooms')
+            const data = res.data?.data
+            setRooms(Array.isArray(data) ? data : [])
+        } catch (e) {
+            console.error(e)
+            setRooms([])
+        }
+    }
+
     useEffect(() => {
+        let mounted = true
+        const loadUser = async () => {
+            try {
+                const userRes = await api.get('/v1/users/info')
+                if (!mounted) return
+                const user = userRes.data?.data
+                setUserInfo(user ? { userId: String(user.userId), fullName: user.fullName || 'User' } : null)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+        loadUser()
+        fetchRooms()
+        return () => { mounted = false }
+    }, [])
+
+    useEffect(() => {
+        if (!roomId) {
+            setRoom(null)
+            setRoomName('')
+            setMessages([])
+            setPlans([])
+            return
+        }
         let mounted = true
         const load = async () => {
             try {
-                const [userRes, roomRes, msgRes, plansRes] = await Promise.all([
-                    api.get('/v1/users/info'),
+                const [roomRes, msgRes, plansRes] = await Promise.all([
                     api.get(`/v1/chat/rooms/${roomId}`),
                     api.get(`/v1/chat/rooms/${roomId}/messages?limit=100`),
                     api.get(`/v1/chat/rooms/${roomId}/plans`)
                 ])
                 if (!mounted) return
-                const user = userRes.data?.data
                 const roomData = roomRes.data?.data
                 const msgData = msgRes.data?.data
                 const planData = plansRes.data?.data
-                setUserInfo(user ? { userId: String(user.userId), fullName: user.fullName || 'User' } : null)
                 setRoom(roomData || null)
                 setRoomName(roomData?.name || '채팅방')
                 setMessages(Array.isArray(msgData) ? msgData : [])
@@ -166,6 +201,23 @@ export default function ChatRoom() {
         })
     }
 
+    const createNewRoom = async () => {
+        if (creating) return
+        setCreating(true)
+        try {
+            const res = await api.post('/v1/chat/rooms', { name: '새 채팅방' })
+            const newRoom = res.data?.data
+            if (newRoom?.id) {
+                fetchRooms()
+                navigate(`/chat/${newRoom.id}`)
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setCreating(false)
+        }
+    }
+
     const renameRoom = async () => {
         if (!roomId) return
         const name = roomName.trim() || '채팅방'
@@ -195,111 +247,226 @@ export default function ChatRoom() {
         }
     }
 
+    const leaveRoom = async () => {
+        if (!roomId || leaving) return
+        if (!window.confirm('이 채팅방에서 나가시겠습니까?')) return
+        setLeaving(true)
+        try {
+            await api.post(`/v1/chat/rooms/${roomId}/leave`)
+            navigate('/chat')
+            fetchRooms()
+        } catch (e) {
+            console.error(e)
+            alert(e.response?.data?.message || '채팅방 나가기에 실패했습니다.')
+        } finally {
+            setLeaving(false)
+        }
+    }
+
     const myUserId = userInfo?.userId
+    const hasRoom = !!roomId
 
     return (
-        <div className="chat-room-layout">
+        <div className="chat-room-layout travel-ai-layout">
+            <aside className="chat-sidebar-left travel-ai-sidebar">
+                <div className="travel-ai-sidebar-header">
+                    <h1 className="travel-ai-logo">Travel AI</h1>
+                    <span className="travel-ai-badge">PREMIUM CONCIERGE</span>
+                </div>
+                <button
+                    type="button"
+                    className="travel-ai-btn-new"
+                    onClick={createNewRoom}
+                    disabled={creating}
+                >
+                    + 새 채팅방
+                </button>
+                <div className="travel-ai-section">
+                    <h3 className="travel-ai-section-title">RECENT DISCOVERIES</h3>
+                    <ul className="chat-sidebar-rooms">
+                        {rooms.length === 0 ? (
+                            <li className="travel-ai-rooms-empty">대화를 시작해 보세요</li>
+                        ) : (
+                            rooms.map((r) => (
+                                <li key={r.id}>
+                                    <Link
+                                        to={`/chat/${r.id}`}
+                                        className={`chat-sidebar-room-link ${r.id === roomId ? 'active' : ''}`}
+                                    >
+                                        <span className="travel-ai-room-icon" aria-hidden>🕐</span>
+                                        <span className="room-name">{r.name || '채팅방'}</span>
+                                    </Link>
+                                </li>
+                            ))
+                        )}
+                    </ul>
+                </div>
+                <div className="travel-ai-card visual-search-card">
+                    <h4 className="visual-search-title">Visual Search Pro</h4>
+                    <p className="visual-search-desc">사진 한 장으로 여행지를 찾아보세요</p>
+                    <Link to="/image-search" className="travel-ai-btn-upgrade">이미지 검색</Link>
+                </div>
+                <div className="travel-ai-sidebar-footer">
+                    <button type="button" className="travel-ai-footer-link" onClick={() => navigate('/mypage')}>
+                        <span className="travel-ai-footer-icon" aria-hidden>👤</span>
+                        My Page
+                    </button>
+                    <Link to="/travel-style" className="travel-ai-footer-link">
+                        <span className="travel-ai-footer-icon" aria-hidden>📊</span>
+                        AI 여행 타입 분석
+                    </Link>
+                </div>
+            </aside>
             <div className="chat-container">
-                <div className="chat-card glass-card">
-                    <div className="chat-header chat-room-header">
-                        <div>
-                            <button type="button" className="back-btn" onClick={() => navigate('/chat')}>
-                                ← 목록
-                            </button>
-                            <h2>
+                {!hasRoom ? (
+                    <div className="chat-welcome-main">
+                        <h2 className="chat-welcome-title">Travel AI Chat</h2>
+                        <p className="chat-welcome-desc">새 추천을 만들거나 왼쪽에서 대화를 선택하세요.</p>
+                        <button
+                            type="button"
+                            className="travel-ai-btn-new chat-welcome-btn"
+                            onClick={createNewRoom}
+                            disabled={creating}
+                        >
+                            + 새 채팅방
+                        </button>
+                        {rooms.length > 0 && (
+                            <ul className="chat-welcome-rooms">
+                                {rooms.map((r) => (
+                                    <li key={r.id}>
+                                        <Link to={`/chat/${r.id}`} className="chat-welcome-room-link">
+                                            <span className="travel-ai-room-icon" aria-hidden>🕐</span>
+                                            {r.name || '채팅방'}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                ) : (
+                    <div className="chat-card glass-card">
+                        <div className="chat-header chat-room-header travel-ai-chat-header">
+                            <div className="travel-ai-chat-header-left">
+                                <h2 className="travel-ai-chat-title">Travel AI Chat</h2>
+                                <span className={`travel-ai-status ${connected ? 'active' : ''}`}>
+                                    • AI CONCIERGE {connected ? 'ACTIVE' : 'CONNECTING…'}
+                                </span>
                                 <input
                                     type="text"
                                     value={roomName}
                                     onChange={(e) => setRoomName(e.target.value)}
                                     onBlur={renameRoom}
                                     onKeyDown={(e) => e.key === 'Enter' && renameRoom()}
-                                    className="room-name-input"
+                                    className="room-name-input travel-ai-room-edit"
                                     placeholder="채팅방 이름"
                                 />
-                            </h2>
+                            </div>
+                            <div className="chat-header-actions travel-ai-header-actions">
+                                <span className={`status-dot ${connected ? 'online' : 'offline'}`} title={connected ? '연결됨' : '연결 끊김'} />
+                                <button type="button" className="invite-btn" onClick={copyInvite}>
+                                    {inviteCopied ? '복사됨!' : '공유'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="chat-leave-btn"
+                                    onClick={leaveRoom}
+                                    disabled={leaving}
+                                >
+                                    {leaving ? '나가는 중…' : '나가기'}
+                                </button>
+                            </div>
                         </div>
-                        <div className="chat-header-actions">
-                            <span className={`status-dot ${connected ? 'online' : 'offline'}`} title={connected ? '연결됨' : '연결 끊김'} />
-                            <button type="button" className="invite-btn" onClick={copyInvite}>
-                                {inviteCopied ? '복사됨!' : '초대 링크 복사'}
+                        <div className="chat-main">
+                            <div className="chat-messages">
+                                {messages.map((m) => (
+                                    <div
+                                        key={m.id || `${m.createdAt}-${m.senderUserId}-${m.content?.slice(0, 20)}`}
+                                        className={`message-wrapper ${m.senderUserId === myUserId ? 'mine' : 'others'}`}
+                                    >
+                                        <span className="sender">{m.senderUserName || '알 수 없음'}</span>
+                                        <div className="message-bubble">
+                                            <p className="content">{m.content}</p>
+                                        </div>
+                                        {m.createdAt && (
+                                            <span className="message-time">
+                                                {new Date(m.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        )}
+                                    </div>
+                                ))}
+                                <div ref={messagesEndRef} />
+                            </div>
+                        </div>
+                        <div className="chat-input-area travel-ai-input-area">
+                            <input
+                                type="text"
+                                placeholder={connected ? 'Tell me more about your travel... (일정이 필요하면 "일정 짜줘" 라고 써보세요)' : '연결 대기 중…'}
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}
+                                disabled={!connected}
+                            />
+                            <button className="travel-ai-send-btn" onClick={send} disabled={!connected || !input.trim()}>
+                                Send
                             </button>
                         </div>
+                        <footer className="travel-ai-chat-footer">
+                            AI TRAVEL DISCOVER • SECURE & ENCRYPTED
+                        </footer>
                     </div>
-                    <div className="chat-main">
-                        <div className="chat-messages">
-                            {messages.map((m) => (
-                                <div
-                                    key={m.id || `${m.createdAt}-${m.senderUserId}-${m.content?.slice(0, 20)}`}
-                                    className={`message-wrapper ${m.senderUserId === myUserId ? 'mine' : 'others'}`}
-                                >
-                                    <span className="sender">{m.senderUserName || '알 수 없음'}</span>
-                                    <div className="message-bubble">
-                                        <p className="content">{m.content}</p>
+                )}
+            </div>
+            {/* 채팅창 옆 빈 공간: PDF 목록 (방 선택 시에만) */}
+            {hasRoom && (
+                <aside className="chat-plans-sidebar">
+                    <h3 className="chat-plans-sidebar-title">생성된 일정 PDF</h3>
+                    {planGenerating && (
+                        <div className="plan-status plan-status-loading" role="status">
+                            <span className="plan-status-spinner" aria-hidden />
+                            <div className="plan-status-loading-text">
+                                <strong>일정 생성 중</strong>
+                                <span>잠시만 기다려 주세요 (최대 약 2분)</span>
+                            </div>
+                        </div>
+                    )}
+                    {planError && (
+                        <div className="plan-status plan-status-error" role="alert">
+                            {planError}
+                        </div>
+                    )}
+                    {plans.length === 0 && !planGenerating ? (
+                        <p className="plans-empty">아직 생성된 일정이 없습니다.<br />채팅에서 &quot;일정 짜줘&quot;라고 보내보세요.</p>
+                    ) : plans.length > 0 ? (
+                        <ul className="plan-download-list">
+                            {plans.map((p) => (
+                                <li key={p.id} className="plan-download-item">
+                                    <div className="plan-download-info">
+                                        <span className="plan-download-name">{p.fileName || '여행 일정.pdf'}</span>
+                                        {p.createdAt && (
+                                            <span className="plan-time">
+                                                {new Date(p.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        )}
                                     </div>
-                                    {m.createdAt && (
-                                        <span className="message-time">
-                                            {new Date(m.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                                    {p.downloadable && p.downloadUrl ? (
+                                        <button
+                                            type="button"
+                                            className="plan-download-btn"
+                                            onClick={(e) => handlePlanDownload(e, p)}
+                                        >
+                                            PDF 다운로드
+                                        </button>
+                                    ) : (
+                                        <span className="plan-expired" title="다운로드 가능 기간(7일)이 지났습니다.">
+                                            기간 만료
                                         </span>
                                     )}
-                                </div>
+                                </li>
                             ))}
-                            <div ref={messagesEndRef} />
-                        </div>
-                    </div>
-                    <div className="chat-input-area">
-                        <input
-                            type="text"
-                            placeholder={connected ? '메시지 입력 (일정이 필요하면 "일정 짜줘" 또는 "일정 만들어줘" 라고 써보세요)' : '연결 대기 중…'}
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}
-                            disabled={!connected}
-                        />
-                        <button onClick={send} disabled={!connected || !input.trim()}>
-                            전송
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <aside className="chat-plans-sidebar">
-                <h3>생성된 일정 PDF</h3>
-                {planGenerating && (
-                    <div className="plan-status plan-status-loading">
-                        <span className="plan-status-spinner" aria-hidden />
-                        <span>일정 생성 중...</span>
-                    </div>
-                )}
-                {planError && (
-                    <div className="plan-status plan-status-error" role="alert">
-                        {planError}
-                    </div>
-                )}
-                {plans.length === 0 && !planGenerating ? (
-                    <p className="plans-empty">아직 생성된 일정이 없습니다.</p>
-                ) : plans.length > 0 ? (
-                    <ul>
-                        {plans.map((p) => (
-                            <li key={p.id}>
-                                {p.downloadable && p.downloadUrl ? (
-                                    <a href={p.downloadUrl} onClick={(e) => handlePlanDownload(e, p)}>
-                                        {p.fileName || '여행 일정.pdf'}
-                                    </a>
-                                ) : (
-                                    <span className="plan-expired" title="다운로드 가능 기간(7일)이 지났습니다.">
-                                        {p.fileName || '여행 일정.pdf'}
-                                        <em> (다운로드 기간 만료)</em>
-                                    </span>
-                                )}
-                                {p.createdAt && (
-                                    <span className="plan-time">
-                                        {new Date(p.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                                    </span>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                ) : null}
-            </aside>
+                        </ul>
+                    ) : null}
+                </aside>
+            )}
         </div>
     )
 }

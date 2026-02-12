@@ -1,21 +1,111 @@
-/* 채팅방 전체: 왼쪽 채팅창 + 오른쪽 PDF 사이드바 */
+/* 채팅방 전체: 왼쪽 사이드바 | 채팅창 | 오른쪽 PDF 사이드바 */
 .chat-room-layout {
     display: flex;
     width: 100%;
-    min-height: 80vh;
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
     gap: 0;
 }
 
-.chat-container {
+/* 왼쪽 사이드바: 채팅방 목록 + 마이페이지·이미지검색·여행스타일 */
+.chat-sidebar-left {
     flex: 0 0 auto;
+    width: 240px;
+    min-width: 200px;
+    border-right: 1px solid var(--glass-border);
+    background: rgba(15, 23, 42, 0.35);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-sidebar-left-title {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.chat-sidebar-rooms {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.chat-sidebar-rooms li {
+    margin-bottom: 4px;
+}
+
+.chat-sidebar-room-link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+
+.chat-sidebar-room-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.chat-sidebar-room-link.active {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+.chat-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--glass-border);
+}
+
+.chat-sidebar-nav-btn {
+    display: block;
     width: 100%;
-    max-width: 800px;
-    height: 80vh;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.05);
+    color: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.chat-sidebar-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+}
+
+.chat-container {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    max-width: 720px;
+    height: 100%;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .chat-card {
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -41,8 +131,8 @@
 }
 
 .status-dot.online {
-    background: #10b981;
-    box-shadow: 0 0 10px #10b981;
+    background: var(--status-active, #16a34a);
+    box-shadow: 0 0 8px rgba(22, 163, 74, 0.4);
 }
 
 .status-dot.offline {
@@ -50,7 +140,8 @@
 }
 
 .chat-messages {
-    flex: 3;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 20px;
     display: flex;
@@ -91,14 +182,15 @@
 }
 
 .mine .message-bubble {
-    background: var(--primary);
-    color: #ffffff;
+    background: var(--primary-light-hover, #BBDEFB);
+    color: var(--text-primary, #333333);
     border-bottom-right-radius: 4px;
 }
 
 .others .message-bubble {
-    background: #f3f4f6;
-    color: #111827;
+    background: var(--bg-card, #FFFFFF);
+    color: var(--text-primary, #333333);
+    border: 1px solid var(--glass-border);
     border-bottom-left-radius: 4px;
 }
 
@@ -128,16 +220,16 @@
 
 .chat-input-area input {
     flex: 1;
-    background: #ffffff;
+    background: var(--bg-card, #fff);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     padding: 12px 16px;
-    color: #111827;
+    color: var(--text-primary, #333);
 }
 
 .chat-input-area button {
     background: var(--primary);
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 12px;
     padding: 0 24px;
@@ -246,7 +338,7 @@
 }
 
 .chat-room-header .back-btn:hover {
-    color: white;
+    color: var(--primary, #1392EC);
 }
 
 .chat-header-actions {
@@ -279,96 +371,113 @@
     display: flex;
     flex: 1;
     min-height: 0;
+    overflow: hidden;
 }
 
-/* 오른쪽 공백 영역: PDF 다운로드 사이드바 (채팅창 바깥) */
+/* 오른쪽: PDF 다운로드 사이드바 — 화면 넘치면 스크롤 */
 .chat-plans-sidebar {
-    flex: 1;
+    flex: 0 0 auto;
+    width: 280px;
     min-width: 260px;
-    max-width: 360px;
+    min-height: 0;
+    height: 100%;
     border-left: 1px solid var(--glass-border);
     padding: 20px;
-    background: rgba(15, 23, 42, 0.25);
+    background: var(--bg-card, #fff);
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
 }
 
+.travel-ai-layout .chat-plans-sidebar {
+    background: var(--bg-card, #fff);
+    border-left: 1px solid var(--border-light, #EEEEEE);
+}
+
+.travel-ai-layout .chat-plans-sidebar h3,
+.travel-ai-layout .chat-plans-sidebar .chat-plans-sidebar-title {
+    color: var(--text-primary, #333333);
+}
+
+.travel-ai-layout .chat-plans-sidebar .plan-status-loading {
+    background: var(--primary-light, #E3F2FD);
+    color: var(--primary, #1392EC);
+    border: 1px solid rgba(19, 146, 236, 0.3);
+}
+
+.travel-ai-layout .chat-plans-sidebar .plan-status-spinner {
+    border-color: rgba(19, 146, 236, 0.3);
+    border-top-color: var(--primary);
+}
+
+.travel-ai-layout .chat-plans-sidebar .plan-download-item {
+    background: var(--bg-app, #F8FAFC);
+    border: 1px solid var(--border-light, #EEEEEE);
+}
+
+.travel-ai-layout .chat-plans-sidebar .plan-download-btn {
+    background: var(--primary, #1392EC);
+}
+
+.travel-ai-layout .chat-plans-sidebar .plan-download-btn:hover {
+    background: var(--primary-hover, #0f78c8);
+}
+
+.chat-plans-sidebar-title,
 .chat-plans-sidebar h3 {
     margin: 0 0 16px 0;
     font-size: 1rem;
     font-weight: 600;
 }
 
-.chat-plans-sidebar ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.chat-plans-sidebar li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 4px;
-    font-size: 0.85rem;
-    margin-bottom: 10px;
-}
-
-.chat-plans-sidebar a {
-    color: #bfdbfe;
-    text-decoration: none;
-}
-
-.chat-plans-sidebar a:hover {
-    text-decoration: underline;
-}
-
 .plans-empty {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-.plan-time {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
-
-.chat-plans-sidebar .plan-expired {
-    color: var(--text-muted);
-    cursor: default;
-}
-
-.chat-plans-sidebar .plan-expired em {
-    font-style: normal;
-    font-size: 0.8em;
-    opacity: 0.85;
-    margin-left: 8px;
-}
-
-.chat-plans-sidebar .plan-status {
-    padding: 12px;
-    border-radius: 8px;
     font-size: 0.9rem;
-    margin-bottom: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* 일정 생성 중: 가시성 강화 */
+.chat-plans-sidebar .plan-status {
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    margin-bottom: 16px;
 }
 
 .chat-plans-sidebar .plan-status-loading {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: rgba(59, 130, 246, 0.15);
+    gap: 14px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0.2) 100%);
     color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    padding: 18px;
 }
 
 .chat-plans-sidebar .plan-status-spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(147, 197, 253, 0.4);
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border: 3px solid rgba(147, 197, 253, 0.3);
     border-top-color: #93c5fd;
     border-radius: 50%;
     animation: plan-spin 0.8s linear infinite;
+}
+
+.plan-status-loading-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.plan-status-loading-text strong {
+    font-size: 1.05rem;
+}
+
+.plan-status-loading-text span {
+    font-size: 0.85rem;
+    opacity: 0.9;
 }
 
 @keyframes plan-spin {
@@ -376,15 +485,78 @@
 }
 
 .chat-plans-sidebar .plan-status-error {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.2);
     color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* PDF 다운로드 목록: 카드형 + 명확한 다운로드 버튼 */
+.plan-download-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.plan-download-item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+}
+
+.plan-download-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.plan-download-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    word-break: break-all;
+}
+
+.plan-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.plan-download-btn {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.plan-download-btn:hover {
+    background: var(--primary-hover);
+}
+
+.plan-download-btn:active {
+    transform: scale(0.98);
+}
+
+.chat-plans-sidebar .plan-expired {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding: 8px 0;
 }
 
 .room-name-input {
     background: transparent;
     border: none;
-    border-bottom: 1px dashed rgba(148, 163, 184, 0.6);
-    color: inherit;
+    border-bottom: 1px dashed var(--glass-border);
+    color: var(--text-primary, #333);
     font: inherit;
     padding: 2px 4px;
     min-width: 160px;
@@ -393,4 +565,477 @@
 .room-name-input:focus {
     outline: none;
     border-bottom-color: var(--primary);
+}
+
+/* ========== Travel AI 디자인: 밝은 그레이 + 틸 블루 (이미지 색감) ========== */
+.travel-ai-layout {
+    min-height: 100vh;
+    background: var(--bg-app, #F5F6F8);
+}
+
+.travel-ai-layout .chat-container {
+    padding: 24px;
+}
+
+.travel-ai-layout .chat-card {
+    background: var(--bg-card, #fff);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-light, #E2E8F0);
+}
+
+/* 왼쪽 사이드바: 흰색 */
+.travel-ai-sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--bg-card, #fff);
+    border-right: 1px solid var(--border-light, #EEEEEE);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.travel-ai-sidebar-header {
+    margin-bottom: 20px;
+}
+
+.travel-ai-logo {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary, #333333);
+}
+
+.travel-ai-badge {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--primary, #1392EC);
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+}
+
+.travel-ai-btn-new {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    background: var(--primary-light, #E3F2FD);
+    color: var(--primary, #1392EC);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-bottom: 24px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.travel-ai-btn-new:hover:not(:disabled) {
+    background: var(--primary, #1392EC);
+    color: #fff;
+}
+
+.travel-ai-btn-new:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.travel-ai-section {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.travel-ai-section-title {
+    margin: 0 0 10px 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted, #666666);
+    letter-spacing: 0.08em;
+}
+
+.travel-ai-sidebar .chat-sidebar-rooms {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.travel-ai-sidebar .chat-sidebar-room-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--text-primary, #333333);
+    margin-bottom: 4px;
+}
+
+.travel-ai-sidebar .chat-sidebar-room-link:hover {
+    background: var(--bg-app, #F5F6F8);
+}
+
+.travel-ai-sidebar .chat-sidebar-room-link.active {
+    background: var(--primary, #1392EC);
+    color: #fff;
+}
+
+.travel-ai-room-icon {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.travel-ai-rooms-empty {
+    font-size: 0.85rem;
+    color: var(--text-muted-soft, #999999);
+    padding: 12px;
+}
+
+.travel-ai-card.visual-search-card {
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--glass-border, #EEEEEE);
+    border-radius: 12px;
+}
+
+.visual-search-title {
+    margin: 0 0 6px 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary, #333333);
+}
+
+.visual-search-desc {
+    margin: 0 0 10px 0;
+    font-size: 0.8rem;
+    color: var(--text-muted, #666666);
+    line-height: 1.4;
+}
+
+.travel-ai-btn-upgrade {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: var(--glass-border, #EEEEEE);
+    color: var(--text-primary, #333333);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.travel-ai-btn-upgrade:hover {
+    background: #DDDDDD;
+    color: var(--text-primary, #333333);
+}
+
+.travel-ai-sidebar-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light, #EEEEEE);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.travel-ai-footer-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-muted, #666666);
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.travel-ai-footer-link:hover {
+    background: var(--bg-app, #F5F6F8);
+    color: var(--text-primary, #333333);
+}
+
+.travel-ai-footer-icon {
+    font-size: 1rem;
+}
+
+/* 채팅 헤더: Travel AI Chat + PDF 드롭다운 */
+.travel-ai-chat-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--bg-card, #fff);
+    border-bottom: 1px solid var(--border-light, #EEEEEE);
+}
+
+.travel-ai-chat-header-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.travel-ai-chat-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary, #333333);
+}
+
+.travel-ai-status {
+    font-size: 0.8rem;
+    color: var(--text-muted-soft, #999999);
+}
+
+.travel-ai-status.active {
+    color: var(--status-active, #16a34a);
+}
+
+.travel-ai-room-edit {
+    font-size: 0.9rem;
+    color: var(--text-muted, #666666);
+    min-width: 120px;
+}
+
+.travel-ai-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.travel-ai-header-actions .invite-btn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    background: var(--primary, #1392EC);
+    color: #fff;
+}
+
+.travel-ai-header-actions .invite-btn:hover {
+    background: var(--primary-hover, #0f78c8);
+}
+
+.chat-leave-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-light, #EEEEEE);
+    background: var(--bg-card, #fff);
+    color: var(--text-muted, #666666);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.chat-leave-btn:hover:not(:disabled) {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.chat-leave-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pdf-header-dropdown {
+    position: relative;
+}
+
+.travel-ai-btn-pdf {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--primary, #1392EC);
+    background: var(--bg-card, #fff);
+    color: var(--primary, #1392EC);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.travel-ai-btn-pdf:hover {
+    background: var(--primary, #1392EC);
+    color: #fff;
+}
+
+.pdf-header-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    background: var(--primary, #1392EC);
+    color: #fff;
+    font-size: 0.75rem;
+}
+
+.pdf-dropdown-panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border-light, #EEEEEE);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+}
+
+.pdf-dropdown-title {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary, #333333);
+}
+
+.pdf-dropdown-panel .plan-status {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+}
+
+.pdf-dropdown-panel .plan-status-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--primary-light, #E3F2FD);
+    color: var(--primary, #1392EC);
+    border: 1px solid rgba(19, 146, 236, 0.3);
+}
+
+.pdf-dropdown-panel .plan-status-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(19, 146, 236, 0.3);
+    border-top-color: var(--primary);
+}
+
+.pdf-dropdown-panel .plan-status-error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.pdf-dropdown-panel .plans-empty {
+    font-size: 0.85rem;
+    color: var(--text-muted, #666666);
+}
+
+.pdf-dropdown-panel .plan-download-item {
+    background: var(--bg-app, #F8FAFC);
+    border: 1px solid var(--border-light, #EEEEEE);
+}
+
+.pdf-dropdown-panel .plan-download-btn {
+    background: var(--primary, #1392EC);
+}
+
+.pdf-dropdown-panel .plan-download-btn:hover {
+    background: var(--primary-hover, #0f78c8);
+}
+
+.travel-ai-input-area input {
+    border-radius: 24px;
+    padding: 12px 20px;
+    border: 1px solid var(--glass-border, #EEEEEE);
+    color: var(--text-primary, #333);
+}
+
+.travel-ai-send-btn {
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    background: var(--primary, #1392EC);
+    color: #fff;
+    border: none;
+}
+
+.travel-ai-send-btn:hover:not(:disabled) {
+    background: var(--primary-hover, #0f78c8);
+}
+
+.travel-ai-chat-footer {
+    padding: 10px 20px;
+    font-size: 0.7rem;
+    color: var(--text-muted-soft, #999999);
+    text-align: center;
+    border-top: 1px solid var(--glass-border);
+}
+
+/* /chat 전용: 방 선택 전 환영 화면 */
+.chat-welcome-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: var(--bg-card, #fff);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--border-light, #EEEEEE);
+}
+
+.chat-welcome-title {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary, #333333);
+}
+
+.chat-welcome-desc {
+    margin: 0 0 24px 0;
+    font-size: 0.95rem;
+    color: var(--text-muted, #666666);
+}
+
+.chat-welcome-btn {
+    margin-bottom: 32px;
+    max-width: 280px;
+}
+
+.chat-welcome-rooms {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 320px;
+}
+
+.chat-welcome-rooms li {
+    margin-bottom: 8px;
+}
+
+.chat-welcome-room-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: var(--bg-app, #F8FAFC);
+    border: 1px solid var(--border-light, #EEEEEE);
+    border-radius: 12px;
+    color: var(--text-primary, #333333);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.chat-welcome-room-link:hover {
+    background: var(--primary-light, #E3F2FD);
+    border-color: var(--primary, #1392EC);
+    color: var(--primary, #1392EC);
 }

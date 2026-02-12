@@ -5,11 +5,19 @@
 @tailwind utilities;
 
 :root {
-    /* 기본 색상 토큰 (채팅 / 로그인 공용) */
-    --primary: #1392ec;
+    /* Travel AI 디자인: 밝은 그레이 배경 + 포인트 컬러 #1392EC */
+    --primary: #1392EC;
     --primary-hover: #0f78c8;
-    --glass-border: rgba(148, 163, 184, 0.4);
-    --text-muted: #6b7280;
+    --primary-light: #E3F2FD;
+    --primary-light-hover: #BBDEFB;
+    --glass-border: #EEEEEE;
+    --text-primary: #333333;
+    --text-muted: #666666;
+    --text-muted-soft: #999999;
+    --bg-app: #F5F6F8;
+    --bg-card: #FFFFFF;
+    --border-light: #E2E8F0;
+    --status-active: #16a34a;
 }
 
 @keyframes fadeIn {

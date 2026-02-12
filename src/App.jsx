@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import AuthCallback from './pages/AuthCallback'
-import Chat from './pages/Chat'
 import ChatRoom from './pages/ChatRoom'
 import MyPage from './pages/MyPage'
 import ImageSearch from './pages/ImageSearch'
@@ -78,8 +77,8 @@ function App() {
 
 
                     <Route path="/" element={isAuthenticated ? <Navigate to="/chat" replace /> : <Navigate to="/login" replace />} />
-                    <Route path="/chat" element={isAuthenticated ? <Chat /> : <Navigate to="/login" replace />} />
-                    <Route path="/chat/room/:roomId" element={isAuthenticated ? <ChatRoom /> : <Navigate to="/login" replace />} />
+                    <Route path="/chat" element={isAuthenticated ? <ChatRoom /> : <Navigate to="/login" replace />} />
+                    <Route path="/chat/:roomId" element={isAuthenticated ? <ChatRoom /> : <Navigate to="/login" replace />} />
                     <Route path="/mypage" element={isAuthenticated ? <MyPage /> : <Navigate to="/login" replace />} />
                     <Route path="/image-search" element={isAuthenticated ? <ImageSearch /> : <Navigate to="/login" replace />} />
                     <Route path="/travel-style" element={<TravelStyle />} />
